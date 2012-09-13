@@ -8,8 +8,8 @@ public class MessageSender {
 		this.socket = socket;
 	}
 	
-	public void sendJoinMessage(){
-		socket.getOut().println("{\"msgType\":\"join\",\"data\":\"RandomName\"}");
+	public void sendJoinMessage(String name){
+		socket.getOut().println("{\"msgType\":\"join\",\"data\":\""+name+"\"}");
 	}
 
 	

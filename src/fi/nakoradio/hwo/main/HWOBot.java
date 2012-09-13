@@ -11,11 +11,15 @@ public class HWOBot {
 
 	public static void main(String[] args){
 		
-		BotSocket newSocket = new BotSocket("boris.helloworldopen.fi", 9090);
+		String botname = args[0];
+		String host = args[1];
+		String port = args[2];
+		
+		BotSocket newSocket = new BotSocket(host, new Integer(port));
 		StackedMessageReader messageReader = StackedMessageReader.startReading(50, newSocket);
 		
 		MessageSender messageSender = new MessageSender(newSocket);
-		messageSender.sendJoinMessage();
+		messageSender.sendJoinMessage(botname);
 		
 		Random random = new Random();
 		long lastTimestamp = System.currentTimeMillis();
