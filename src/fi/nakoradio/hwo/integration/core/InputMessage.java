@@ -112,20 +112,20 @@ public class InputMessage {
 		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("maxWidth").getAsLong();
 	}
 
-	public double getBallY() {
-		return root.getAsJsonObject().get("data").getAsJsonObject().get("ball").getAsJsonObject().get("pos").getAsJsonObject().get("y").getAsDouble();
+	public float getBallY() {
+		return root.getAsJsonObject().get("data").getAsJsonObject().get("ball").getAsJsonObject().get("pos").getAsJsonObject().get("y").getAsFloat();
 	}
 
-	public double getBallX() {
-		return root.getAsJsonObject().get("data").getAsJsonObject().get("ball").getAsJsonObject().get("pos").getAsJsonObject().get("x").getAsDouble();
+	public float getBallX() {
+		return root.getAsJsonObject().get("data").getAsJsonObject().get("ball").getAsJsonObject().get("pos").getAsJsonObject().get("x").getAsFloat();
 	}
 
 	public String getRightPlayerName() {
 		return root.getAsJsonObject().get("data").getAsJsonObject().get("right").getAsJsonObject().get("playerName").getAsString();
 	}
 
-	public double getRightPlayerY() {
-		return root.getAsJsonObject().get("data").getAsJsonObject().get("right").getAsJsonObject().get("y").getAsDouble();
+	public float getRightPlayerY() {
+		return root.getAsJsonObject().get("data").getAsJsonObject().get("right").getAsJsonObject().get("y").getAsFloat();
 	}
 
 	public String getLeftPlayerName() {
@@ -133,8 +133,8 @@ public class InputMessage {
 		
 	}
 
-	public double getLeftPlayerY() {
-		return root.getAsJsonObject().get("data").getAsJsonObject().get("left").getAsJsonObject().get("y").getAsDouble();
+	public float getLeftPlayerY() {
+		return root.getAsJsonObject().get("data").getAsJsonObject().get("left").getAsJsonObject().get("y").getAsFloat();
 	}
 
 	public String getMessageType(){
