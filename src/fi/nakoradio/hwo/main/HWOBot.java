@@ -56,6 +56,8 @@ public class HWOBot {
 		World testWorld = test.getInitializedWorld();
 		testWorld.setGravity(new Vec2(0,0));
 		PhysicsWorld world = new PhysicsWorld(testWorld);
+		CollisionListener collisions = new CollisionListener(world);
+		testWorld.setContactListener(collisions);
 		test.setCamera(new Vec2(291.4259f,183.91339f), 0.46997482f);
 		
 		messenger.sendJoinMessage(botname);
@@ -68,14 +70,14 @@ public class HWOBot {
 				InputMessage positionMessage = messenger.getPositionMessages().pop();
 				blueprint.update(positionMessage);
 				world.update(blueprint);
-				System.out.println("--" + positionMessage.getMessage());
+				//System.out.println("--" + positionMessage.getMessage());
 			}
 			
 			
 			if(!messenger.getControlMessages().empty()){
 				InputMessage controlMessage = messenger.getControlMessages().pop();
 				
-				System.out.println("**" + controlMessage.getMessage());
+				//System.out.println("**" + controlMessage.getMessage());
 				
 				if(controlMessage.isGameOverMessage()){
 					playCount--;

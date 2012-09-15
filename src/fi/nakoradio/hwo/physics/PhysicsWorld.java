@@ -18,14 +18,20 @@ import fi.nakoradio.hwo.model.objects.Blueprint;
 
 public class PhysicsWorld {
 	
+	public static int CATEGORY_BOUNDARY =	0x0001;
+	public static int CATEGORY_SENSORS = 	0x0002;
+	public static int CATEGORY_BALL = 		0x0004;
+	public static int CATEGORY_PADDLE = 	0x0008;
+	
+	
 	World world;
 	Body arena;
 	Body ball;
 	Body myPaddle;
 	Body opponentPaddle;
+	Body myDeathLine;
+	Body opponentDeathLine;
 	
-	Fixture leftWall;
-	Fixture rightWall;
 	
 	Blueprint blueprint;
 	
@@ -49,14 +55,39 @@ public class PhysicsWorld {
 		if(this.ball == null) createBall(blueprint.getBall());
 		if(this.myPaddle == null) this.myPaddle = createPaddle(blueprint.getMyPaddle());
 		if(this.opponentPaddle == null) this.opponentPaddle = createPaddle(blueprint.getMyPaddle());
+		if(this.myDeathLine == null) createMyDeathLine(blueprint);
+		//if(this.opponentDeathLine == null) this.opponentDeathLine = createOpponentDeathLine(blueprint);
 		
+		// TODO: we do not detect changes in static arena variables. etc width, height and radius
 		this.ball.setTransform(blueprint.getBall().getPosition(),0);
-		this.myPaddle.setTransform(blueprint.getMyPaddle().getPosition(), 0);
-		this.opponentPaddle.setTransform(blueprint.getOpponentPaddle().getPosition(), 0);
+		this.myPaddle.setTransform(blueprint.getMyPaddle().getCenterPosition(), 0);
+		this.opponentPaddle.setTransform(blueprint.getOpponentPaddle().getCenterPosition(), 0);
 	}
 	
 	
 	
+	private Body createOpponentDeathLine(Blueprint blueprint) {
+		return null;
+	}
+
+	private void createMyDeathLine(Blueprint blueprint) {
+		BodyDef edgeBodyDef = new BodyDef();
+		edgeBodyDef.position.set(0, 0);
+		this.myDeathLine = getWorld().createBody(edgeBodyDef);
+
+		PolygonShape box = new PolygonShape();
+		FixtureDef fixture = new FixtureDef();
+		fixture.shape = box;
+		fixture.isSensor = true;
+		fixture.filter.categoryBits = CATEGORY_SENSORS;
+		fixture.filter.maskBits = CATEGORY_BALL; // Only collide with Ball
+
+		float deathLineDistanceFromLeftWall = blueprint.getMyPaddle().getWidth();
+		float deathLineHeight = blueprint.getArena().getHeight();
+		box.setAsEdge(new Vec2(deathLineDistanceFromLeftWall, 0), new Vec2(deathLineDistanceFromLeftWall, deathLineHeight));
+		this.myDeathLine.createFixture(fixture);
+	}
+
 	private void createWalls(Arena arena) {
 		//TODO: Should we have the friction and restitution here set similar to ball?
 		
@@ -67,6 +98,7 @@ public class PhysicsWorld {
 		PolygonShape box = new PolygonShape();
 		FixtureDef fixture = new FixtureDef();
 		fixture.shape = box;
+		fixture.filter.categoryBits = CATEGORY_BOUNDARY;
 
 		float width = arena.getWidth();
 		float height = arena.getHeight();
@@ -76,13 +108,13 @@ public class PhysicsWorld {
 		this.arena.createFixture(fixture);
 
 		box.setAsEdge(new Vec2(width, 0), new Vec2(width, height));
-		this.rightWall = this.arena.createFixture(fixture);
+		this.arena.createFixture(fixture);
 
 		box.setAsEdge(new Vec2(width, height), new Vec2(0, height));
 		this.arena.createFixture(fixture);
 
 		box.setAsEdge(new Vec2(0, height), new Vec2(0, 0));
-		this.leftWall = this.arena.createFixture(fixture);
+		this.arena.createFixture(fixture);
 
 	}
 
@@ -99,6 +131,7 @@ public class PhysicsWorld {
 		fixtureDef.density = 1f;
 		fixtureDef.friction = 0f;
 		fixtureDef.restitution = 1f;
+		fixtureDef.filter.categoryBits = CATEGORY_BALL;
 		this.ball.createFixture(fixtureDef);
 		
 		this.ball.applyLinearImpulse(new Vec2(5000,7000), this.ball.getPosition());
@@ -107,13 +140,18 @@ public class PhysicsWorld {
 	private Body createPaddle(Paddle paddle) {
 		//TODO: Should we have the friction and restitution here set similar to ball?
 		BodyDef def = new BodyDef();
-		def.position.set(paddle.getPosition());
+		def.position.set(paddle.getCenterPosition());
 		Body paddleToCreate = getWorld().createBody(def);
 	    PolygonShape groundBox = new PolygonShape();
-	    groundBox.setAsBox(paddle.getWidth(),paddle.getHeight());
-	    paddleToCreate.createFixture(groundBox, 1f);
+	    groundBox.setAsBox(paddle.getWidth()/2,paddle.getHeight()/2);
 	    
+	    FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = groundBox;
+		fixtureDef.density = 1f;
+		// TODO: Should we prevent paddle from colliding with the boundary
+		fixtureDef.filter.categoryBits = CATEGORY_PADDLE;
 	    
+		paddleToCreate.createFixture(fixtureDef);
 	    return paddleToCreate;
 	}
 
@@ -167,16 +205,18 @@ public class PhysicsWorld {
 		this.opponentPaddle = opponentPaddle;
 	}
 
-	public Fixture getLeftWall() {
-		return leftWall;
-	}
-
-	public Fixture getRightWall() {
-		return rightWall;
-	}
+	
 
 	public Blueprint getBlueprint() {
 		return this.blueprint;
+	}
+
+	public Body getMyDeathLine() {
+		return myDeathLine;
+	}
+
+	public Body getOpponentDeathLine() {
+		return opponentDeathLine;
 	}
 
 	

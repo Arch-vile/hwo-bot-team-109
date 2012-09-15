@@ -39,11 +39,11 @@ public class Blueprint {
 		this.ball.setPosition(new Vec2(message.getBallX(), message.getBallY()));
 		this.ball.setRadius(message.getConfBallRadius());
 		
-		this.myPaddle.setPosition(new Vec2(0,message.getLeftPlayerY()));
+		this.myPaddle.setUpperLeftCornerPosition(new Vec2(0,message.getLeftPlayerY()));
 		this.myPaddle.setHeight(message.getConfPaddleHeight());
 		this.myPaddle.setWidth(message.getConfPaddleWidth());
 		
-		this.opponentPaddle.setPosition(new Vec2(message.getConfMaxWidth(),message.getRightPlayerY()));
+		this.opponentPaddle.setUpperLeftCornerPosition(new Vec2(message.getConfMaxWidth()-message.getConfPaddleWidth(),message.getRightPlayerY()));
 		this.opponentPaddle.setHeight(message.getConfPaddleHeight());
 		this.opponentPaddle.setWidth(message.getConfPaddleWidth());
 		

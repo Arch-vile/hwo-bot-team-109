@@ -19,15 +19,13 @@ public class CollisionListener implements ContactListener {
 	
 	@Override
 	public void beginContact(Contact contact) {
-		
 		WorldManifold manifold = new WorldManifold();
 		contact.getWorldManifold(manifold);
 		
-		if(contact.getFixtureA() == world.getLeftWall() || contact.getFixtureB() == world.getLeftWall()){
-			Vec2[] points = manifold.points;
-			if(points.length >= 0){
-				this.deathPoint = points[0];
-			}
+		if(		(contact.getFixtureA().getBody() == world.getMyDeathLine() || contact.getFixtureB().getBody() == world.getMyDeathLine() ) &&
+				(contact.getFixtureA().getBody() == world.getBall() || contact.getFixtureB().getBody() == world.getBall() )){
+			this.deathPoint = world.getBall().getPosition();
+			
 		}
 	}
 

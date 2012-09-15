@@ -28,14 +28,18 @@ public class Paddle {
 		this.height = height;
 	}
 
-	public Vec2 getPosition() {
+	public Vec2 getUpperLeftCornerPosition() {
 		return position;
 	}
 
-	public void setPosition(Vec2 position) {
+	public void setUpperLeftCornerPosition(Vec2 position) {
 		this.position = position;
 	}
 	
+	
+	public Vec2 getCenterPosition(){
+		return this.getUpperLeftCornerPosition().add(new Vec2(this.width/2,this.height/2));
+	}
 	
 	
 	
