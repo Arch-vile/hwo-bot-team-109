@@ -16,37 +16,40 @@ public class InputMessage {
 	public InputMessage(String jsonString) throws BadInputMessageException {
 		this.message = jsonString;
 		
+		String method = "";
 		try {
 			this.root = new JsonParser().parse(this.message);
 			
+			method = ""; 
 			getMessageType();
 			
+			
 			if(isGameIsOnMessage()){
-				getTime();
-				getLeftPlayerY();
-				getLeftPlayerName();
-				getRightPlayerY();
-				getRightPlayerName();
-				getBallX();
-				getBallY();
-				getConfMaxWidth();
-				getConfMaxHeight();
-				getConfPaddleHeight();
-				getConfPaddleWidth();
-				getConfBallRadius();
-				getConfTickInterval();
+				method = "getTime"; getTime();
+				method = "getLeftPlayerY"; getLeftPlayerY();
+				method = "getLeftPlayerName"; getLeftPlayerName();
+				method = "getRightPlayerY"; getRightPlayerY();
+				method = "getRightPlayerName"; getRightPlayerName();
+				method = "getBallX"; getBallX();
+				method = "getBallY"; getBallY();
+				method = "getConfMaxWidth"; getConfMaxWidth();
+				method = "getConfMaxHeight"; getConfMaxHeight();
+				method = "getConfPaddleHeight"; getConfPaddleHeight();
+				method = "getConfPaddleWidth"; getConfPaddleWidth();
+				method = "getConfBallRadius"; getConfBallRadius();
+				method = "getConfTickInterval"; getConfTickInterval();
 			}else if(isJoinedMessage()){
-				getVisualizeUrl();
+				method = "getVisualizeUrl"; getVisualizeUrl();
 			}else if(isGameStartedMessage()){
-				getPlayer1();
-				getPlayer2();
+				method = "getPlayer1"; getPlayer1();
+				method = "getPlayer2"; getPlayer2();
 			} else if(isGameOverMessage()){
-				getWinner();
+				method = "getWinner"; getWinner();
 			} else
 				throw new BadInputMessageException("Unknown message type detected");
 			
 		}catch(Exception e){
-			throw new BadInputMessageException("For input ["+jsonString+"]",e);
+			throw new BadInputMessageException("For input ["+jsonString+"] method ["+method+"()]",e);
 		}
 	}
 	
@@ -92,24 +95,24 @@ public class InputMessage {
 		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("tickInterval").getAsLong();
 	}
 
-	public long getConfBallRadius() {
-		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("ballRadius").getAsLong();
+	public float getConfBallRadius() {
+		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("ballRadius").getAsFloat();
 	}
 
-	public long getConfPaddleWidth() {
-		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("paddleWidth").getAsLong();
+	public float getConfPaddleWidth() {
+		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("paddleWidth").getAsFloat();
 	}
 
-	public long getConfPaddleHeight() {
-		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("paddleHeight").getAsLong();
+	public float getConfPaddleHeight() {
+		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("paddleHeight").getAsFloat();
 	}
 
-	public long getConfMaxHeight() {
-		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("maxHeight").getAsLong();
+	public float getConfMaxHeight() {
+		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("maxHeight").getAsFloat();
 	}
 
-	public long getConfMaxWidth() {
-		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("maxWidth").getAsLong();
+	public float getConfMaxWidth() {
+		return root.getAsJsonObject().get("data").getAsJsonObject().get("conf").getAsJsonObject().get("maxWidth").getAsFloat();
 	}
 
 	public float getBallY() {

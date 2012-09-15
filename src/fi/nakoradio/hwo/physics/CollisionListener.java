@@ -10,7 +10,7 @@ import org.jbox2d.dynamics.contacts.Contact;
 public class CollisionListener implements ContactListener {
 
 	PhysicsWorld world;
-	
+	Vec2 deathPoint;
 	
 	public CollisionListener(PhysicsWorld world){
 		this.world = world;
@@ -23,16 +23,12 @@ public class CollisionListener implements ContactListener {
 		WorldManifold manifold = new WorldManifold();
 		contact.getWorldManifold(manifold);
 		
-		Vec2[] points = manifold.points;
-		if(points.length >= 0){
-			System.out.println(points[0].x + "," + points[0].y);
+		if(contact.getFixtureA() == world.getLeftWall() || contact.getFixtureB() == world.getLeftWall()){
+			Vec2[] points = manifold.points;
+			if(points.length >= 0){
+				this.deathPoint = points[0];
+			}
 		}
-		
-		if(contact.getFixtureA().getBody() == world.getMyPaddle() || contact.getFixtureB().getBody() == world.getMyPaddle())
-			System.out.println("MY PADDLE");
-		
-		
-		
 	}
 
 	@Override
@@ -53,4 +49,15 @@ public class CollisionListener implements ContactListener {
 		
 	}
 
+
+	public Vec2 getDeathPoint() {
+		return deathPoint;
+	}
+
+	public Vec2 popDeathPoint(){
+		Vec2 toReturn = this.deathPoint;
+		this.deathPoint = null;
+		return toReturn;
+	}
+	
 }
