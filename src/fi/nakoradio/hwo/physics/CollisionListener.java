@@ -11,21 +11,25 @@ public class CollisionListener implements ContactListener {
 
 	PhysicsWorld world;
 	Vec2 deathPoint;
+	private String id;
 	
-	public CollisionListener(PhysicsWorld world){
+	public CollisionListener(PhysicsWorld world, String id){
 		this.world = world;
+		this.id = id;
 	}
 	
 	
 	@Override
 	public void beginContact(Contact contact) {
-		WorldManifold manifold = new WorldManifold();
-		contact.getWorldManifold(manifold);
 		
+		/*System.out.println("["+ id + "] collision ");
+		System.out.println("" + (contact.getFixtureA().getBody() == world.getMyDeathLine() || contact.getFixtureB().getBody() == world.getMyDeathLine() ));
+		System.out.println("" + (contact.getFixtureA().getBody() == world.getBall() || contact.getFixtureB().getBody() == world.getBall() ));
+		*/
 		if(		(contact.getFixtureA().getBody() == world.getMyDeathLine() || contact.getFixtureB().getBody() == world.getMyDeathLine() ) &&
 				(contact.getFixtureA().getBody() == world.getBall() || contact.getFixtureB().getBody() == world.getBall() )){
 			this.deathPoint = world.getBall().getPosition();
-			
+			System.out.println("["+ id + "] DEATH AT: " + deathPoint);
 		}
 	}
 

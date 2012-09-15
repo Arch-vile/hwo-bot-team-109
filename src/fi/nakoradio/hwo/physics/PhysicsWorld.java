@@ -15,6 +15,7 @@ import fi.nakoradio.hwo.model.objects.Ball;
 import fi.nakoradio.hwo.model.objects.Paddle;
 import fi.nakoradio.hwo.model.objects.RealityMapper;
 import fi.nakoradio.hwo.model.objects.Blueprint;
+import fi.nakoradio.hwo.model.objects.StateInTime;
 
 public class PhysicsWorld {
 	
@@ -49,7 +50,8 @@ public class PhysicsWorld {
 		this.update(blueprint);
 	}
 	
-	public void update(Blueprint blueprint) {
+	public void update(Blueprint blueprint, boolean staticWorld) {
+		//TODO: we really should copy the blueprint instead of reference as it could be shared between other models
 		this.blueprint = blueprint;
 		if(this.arena == null) createWalls(blueprint.getArena());
 		if(this.ball == null) createBall(blueprint.getBall());
@@ -59,11 +61,44 @@ public class PhysicsWorld {
 		//if(this.opponentDeathLine == null) this.opponentDeathLine = createOpponentDeathLine(blueprint);
 		
 		// TODO: we do not detect changes in static arena variables. etc width, height and radius
-		this.ball.setTransform(blueprint.getBall().getPosition(),0);
-		this.myPaddle.setTransform(blueprint.getMyPaddle().getCenterPosition(), 0);
-		this.opponentPaddle.setTransform(blueprint.getOpponentPaddle().getCenterPosition(), 0);
+		if(this.ball != null) this.ball.setTransform(blueprint.getBall().getPosition(),0);
+		if(this.myPaddle != null) this.myPaddle.setTransform(blueprint.getMyPaddle().getCenterPosition(), 0);
+		if(this.opponentPaddle != null) this.opponentPaddle.setTransform(blueprint.getOpponentPaddle().getCenterPosition(), 0);
+		
+		if(!staticWorld){
+			
+			if(this.ball != null){
+				System.out.println("Ball speed: " + blueprint.getBall().getSpeed());
+				this.ball.applyLinearImpulse(blueprint.getBall().getSpeed(), this.ball.getPosition());
+			}
+		}
+		
 	}
 	
+	public void update(Blueprint blueprint) {
+		update(blueprint, true);
+	}
+	
+	public Blueprint getCurrentState() {
+		StateInTime state = new StateInTime();
+		state.setBallX(getBall().getPosition().x);
+		state.setBallY(getBall().getPosition().y);
+		state.setLeftPlayerY(getMyPaddle().getPosition().y);
+		state.setRightPlayerY(getOpponentPaddle().getPosition().y);
+		
+		// static values
+		state.setConfBallRadius(getBlueprint().getBall().getRadius());
+		state.setConfMaxHeight(getBlueprint().getArena().getHeight());
+		state.setConfMaxWidth(getBlueprint().getArena().getWidth());
+		state.setConfPaddleHeight(getBlueprint().getMyPaddle().getHeight());
+		state.setConfPaddleWidth(getBlueprint().getMyPaddle().getWidth());
+		state.setConfTickInterval(getBlueprint().getTickInterval());
+		
+		//TODO: what actually is the correct time to return
+		state.setTime(System.currentTimeMillis());
+		return new Blueprint(state);
+	}
+
 	
 	
 	private Body createOpponentDeathLine(Blueprint blueprint) {
@@ -71,9 +106,11 @@ public class PhysicsWorld {
 	}
 
 	private void createMyDeathLine(Blueprint blueprint) {
+		if(blueprint.getMyPaddle() == null || blueprint.getArena() == null) return;
+		
 		BodyDef edgeBodyDef = new BodyDef();
 		edgeBodyDef.position.set(0, 0);
-		this.myDeathLine = getWorld().createBody(edgeBodyDef);
+		this.myDeathLine = getPhysics().createBody(edgeBodyDef);
 
 		PolygonShape box = new PolygonShape();
 		FixtureDef fixture = new FixtureDef();
@@ -91,9 +128,11 @@ public class PhysicsWorld {
 	private void createWalls(Arena arena) {
 		//TODO: Should we have the friction and restitution here set similar to ball?
 		
+		if(arena == null) return;
+		
 		BodyDef edgeBodyDef = new BodyDef();
 		edgeBodyDef.position.set(0, 0);
-		this.arena = getWorld().createBody(edgeBodyDef);
+		this.arena = getPhysics().createBody(edgeBodyDef);
 
 		PolygonShape box = new PolygonShape();
 		FixtureDef fixture = new FixtureDef();
@@ -119,10 +158,12 @@ public class PhysicsWorld {
 	}
 
 	private void createBall(Ball ball) {
+		if(ball == null) return;
+		
 		BodyDef def = new BodyDef();
 		def.type = BodyType.DYNAMIC;
 		def.position.set(ball.getPosition());
-		this.ball = getWorld().createBody(def);
+		this.ball = getPhysics().createBody(def);
 		
 		CircleShape ballShape = new CircleShape();
 		ballShape.m_radius = ball.getRadius();
@@ -134,14 +175,15 @@ public class PhysicsWorld {
 		fixtureDef.filter.categoryBits = CATEGORY_BALL;
 		this.ball.createFixture(fixtureDef);
 		
-		this.ball.applyLinearImpulse(new Vec2(5000,7000), this.ball.getPosition());
 	}
 	
 	private Body createPaddle(Paddle paddle) {
+		if(paddle == null) return null;
+		
 		//TODO: Should we have the friction and restitution here set similar to ball?
 		BodyDef def = new BodyDef();
 		def.position.set(paddle.getCenterPosition());
-		Body paddleToCreate = getWorld().createBody(def);
+		Body paddleToCreate = getPhysics().createBody(def);
 	    PolygonShape groundBox = new PolygonShape();
 	    groundBox.setAsBox(paddle.getWidth()/2,paddle.getHeight()/2);
 	    
@@ -156,7 +198,7 @@ public class PhysicsWorld {
 	}
 
 
-	public World getWorld() {
+	public World getPhysics() {
 		return world;
 	}
 
@@ -218,6 +260,9 @@ public class PhysicsWorld {
 	public Body getOpponentDeathLine() {
 		return opponentDeathLine;
 	}
+
+	
+	
 
 	
 

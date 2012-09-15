@@ -16,11 +16,21 @@ public class SimulatedMessenger implements Messenger {
 	private boolean running = true;
 	private Thread thread;
 	
-	public SimulatedMessenger(InputMessage initState){
-		Blueprint blueprint = new Blueprint(initState);
-		this.simulation = new PhysicsWorld(new World(new Vec2(0,0), true), blueprint);
-		this.controlMessages = new SizedStack<InputMessage>(50);
-		this.positionMessages = new SizedStack<InputMessage>(50);
+	public SimulatedMessenger(){
+		String initState = "{\"msgType\":\"gameIsOn\",\"data\":{\"time\":1347651768367,\"left\":{\"y\":240.0,\"playerName\":\"randombot\"},\"right\":{\"y\":240.0,\"playerName\":\"becker\"},\"ball\":{\"pos\":{\"x\":571.0496379848345,\"y\":159.49839994531766}},\"conf\":{\"maxWidth\":640,\"maxHeight\":480,\"paddleHeight\":50,\"paddleWidth\":10,\"ballRadius\":5,\"tickInterval\":30}}}";
+		InputMessage initStateMessage = null;
+		try {
+			initStateMessage = new InputMessage(initState);
+			Blueprint blueprint = new Blueprint(initStateMessage.getStateInTime());
+			this.simulation = new PhysicsWorld(new World(new Vec2(0,0), true), blueprint);
+			this.simulation.getBall().applyLinearImpulse(new Vec2(5000,7000), this.simulation.getBall().getPosition());
+			
+			this.controlMessages = new SizedStack<InputMessage>(50);
+			this.positionMessages = new SizedStack<InputMessage>(50);
+		} catch (BadInputMessageException e1) {
+			System.err.println("Failed to create init state for message simulation");
+			e1.printStackTrace();
+		}
 	}
 	
 	
@@ -31,7 +41,7 @@ public class SimulatedMessenger implements Messenger {
 		
 			while(!Thread.interrupted() && this.running){
 				
-				simulation.getWorld().step(1f/60f, 10, 8);
+				simulation.getPhysics().step(1f/60f, 10, 8);
 				Thread.sleep(1000/60);
 				
 				String messageData = this.getStateAsJSON();

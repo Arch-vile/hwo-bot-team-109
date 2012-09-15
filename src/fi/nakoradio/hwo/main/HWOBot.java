@@ -6,6 +6,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
 
+import fi.nakoradio.hwo.ai.Nostradamus;
 import fi.nakoradio.hwo.integration.core.BadInputMessageException;
 import fi.nakoradio.hwo.integration.core.BotSocket;
 import fi.nakoradio.hwo.integration.core.InputMessage;
@@ -17,6 +18,7 @@ import fi.nakoradio.hwo.physics.CollisionListener;
 import fi.nakoradio.hwo.physics.PhysicsWorld;
 import fi.nakoradio.hwo.physics.visualization.Box2dTest;
 import fi.nakoradio.hwo.physics.visualization.Box2dTestbed;
+import fi.nakoradio.hwo.physics.visualization.GameVisualizer;
 
 public class HWOBot {
 
@@ -27,55 +29,49 @@ public class HWOBot {
 		String port = args[2];
 		
 		//Messenger messenger = new SocketMessenger(host, new Integer(port));
-		String initState = "{\"msgType\":\"gameIsOn\",\"data\":{\"time\":1347651768367,\"left\":{\"y\":240.0,\"playerName\":\"randombot\"},\"right\":{\"y\":240.0,\"playerName\":\"becker\"},\"ball\":{\"pos\":{\"x\":571.0496379848345,\"y\":159.49839994531766}},\"conf\":{\"maxWidth\":640,\"maxHeight\":480,\"paddleHeight\":50,\"paddleWidth\":10,\"ballRadius\":5,\"tickInterval\":30}}}";
-		InputMessage initStateMessage = null;
-		try {
-			initStateMessage = new InputMessage(initState);
-		} catch (BadInputMessageException e1) {
-			System.err.println("Failed to create init state for message simulation");
-			e1.printStackTrace();
-		}
-		Messenger messenger = new SimulatedMessenger(initStateMessage);
+		Messenger messenger = new SimulatedMessenger();
 		messenger.start();
 		
+		// TODO: NOTE: Printing death point at simulation and at nostradamus do not match exactly... is it something to worry about?
+		// version showing this error is tagged in git as "deathpointMismatch". it opens two simulations windows
+		CollisionListener collisions = new CollisionListener(((SimulatedMessenger)messenger).getSimulation(),"Simulation");
+		((SimulatedMessenger)messenger).getSimulation().getPhysics().setContactListener(collisions);
 		
 		
-		Random random = new Random();
-		long lastTimestamp = System.currentTimeMillis();
 		int playCount = 20;
-		float paddleDirection = 0;
 		boolean running = true;
 		
 		Blueprint blueprint = new Blueprint();
-		Box2dTest test = new Box2dTest();
 		
 		
-		Box2dTestbed tester = new Box2dTestbed();
-		tester.startSimulation(test);
+		GameVisualizer visualizer = new GameVisualizer();
+		visualizer.start();
 		
-		World testWorld = test.getInitializedWorld();
-		testWorld.setGravity(new Vec2(0,0));
-		PhysicsWorld world = new PhysicsWorld(testWorld);
-		CollisionListener collisions = new CollisionListener(world);
-		testWorld.setContactListener(collisions);
-		test.setCamera(new Vec2(291.4259f,183.91339f), 0.46997482f);
+		GameVisualizer visualizer2 = new GameVisualizer();
+		visualizer2.start();
+		
+		Nostradamus nostradamus = new Nostradamus();
 		
 		messenger.sendJoinMessage(botname);
 		
+		long lastTimestamp = System.currentTimeMillis();
+		
+		int counter = 0;
 		while(running){
 			
 			try { Thread.sleep(20); } catch(Exception e){}
 			
 			if(!messenger.getPositionMessages().empty()){
-				InputMessage positionMessage = messenger.getPositionMessages().pop();
-				blueprint.update(positionMessage);
-				world.update(blueprint);
+				InputMessage positionMessage = messenger.getPositionMessages().peek();
+				blueprint.update(positionMessage.getStateInTime());
+				visualizer.update(blueprint);
+				
 				//System.out.println("--" + positionMessage.getMessage());
 			}
 			
 			
 			if(!messenger.getControlMessages().empty()){
-				InputMessage controlMessage = messenger.getControlMessages().pop();
+				InputMessage controlMessage = messenger.getControlMessages().peek();
 				
 				//System.out.println("**" + controlMessage.getMessage());
 				
@@ -86,15 +82,18 @@ public class HWOBot {
 				}
 			}
 			
-			if(System.currentTimeMillis()-lastTimestamp >= 1500){
-				lastTimestamp = System.currentTimeMillis();
-				if(random.nextInt(100) < 50)
-					paddleDirection = 1;
-				else
-					paddleDirection = -1;
-				System.out.println("Sending paddle move message: " + paddleDirection);
-				messenger.sendPaddleMovementMessage(paddleDirection);
+			if(nostradamus.getWorld().getBlueprint() != null){
+				visualizer2.update(nostradamus.getWorld().getCurrentState());
+				nostradamus.getWorld().getPhysics().step(1f/60f, 10, 8);
+			}
+			
+			if(System.currentTimeMillis() - lastTimestamp > 1500){
+				lastTimestamp = System.currentTimeMillis()+500000;
 				
+				nostradamus.update(blueprint);
+				
+				//Vec2 deathPoint = nostradamus.getNextDeathPoint();
+				//((SimulatedMessenger)messenger).getSimulation().getMyPaddle().setTransform(deathPoint, 0);
 			}
 			
 		}

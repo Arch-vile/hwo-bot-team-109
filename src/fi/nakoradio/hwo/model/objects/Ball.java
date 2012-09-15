@@ -37,7 +37,7 @@ public class Ball {
 		if(position == null || previousPosition == null)
 			return new Vec2(0,0);
 		
-		Vec2 speed = this.position.sub(previousPosition);
+		Vec2 speed = this.position.sub(previousPosition).mul(1000);
 		return speed;
 	}
 	

@@ -3,6 +3,8 @@ package fi.nakoradio.hwo.integration.core;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
+import fi.nakoradio.hwo.model.objects.StateInTime;
+
 public class InputMessage {
 
 	private static final String MESSAGETYPE_JOINED = "joined";
@@ -162,6 +164,22 @@ public class InputMessage {
 		try { new InputMessage("{ msgType: \"foobar\",msgType: \"karhu\" }"); }catch(Exception e){ System.err.println(e); }
 		
 		//TODO: add more checks for message format
+	}
+
+	public StateInTime getStateInTime() {
+		StateInTime state = new StateInTime();
+		state.setBallX(getBallX());
+		state.setBallY(getBallY());
+		state.setConfBallRadius(getConfBallRadius());
+		state.setConfMaxHeight(getConfMaxHeight());
+		state.setConfMaxWidth(getConfMaxWidth());
+		state.setConfPaddleHeight(getConfPaddleHeight());
+		state.setConfPaddleWidth(getConfPaddleWidth());
+		state.setConfTickInterval(getConfTickInterval());
+		state.setLeftPlayerY(getLeftPlayerY());
+		state.setRightPlayerY(getRightPlayerY());
+		state.setTime(getTime());
+		return state;
 	}
 	
 	

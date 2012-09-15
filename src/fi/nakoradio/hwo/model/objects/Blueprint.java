@@ -17,35 +17,36 @@ public class Blueprint {
 		
 	}
 	
-	public Blueprint(InputMessage message){
-		update(message);
+	public Blueprint(StateInTime state){
+		update(state);
 	}
 	
-	public void init(InputMessage message){
-		update(message);
+	public void init(StateInTime state){
+		update(state);
 	}
 	
-	public void update(InputMessage message){
+	
+	public void update(StateInTime state){
 		if(this.ball == null) this.ball = new Ball();
 		if(this.myPaddle == null) this.myPaddle = new Paddle();
 		if(this.opponentPaddle == null) this.opponentPaddle = new Paddle();
 		if(this.arena == null) this.arena = new Arena(); 
 		
-		this.tickInterval = message.getConfTickInterval();
+		this.tickInterval = state.getConfTickInterval();
 		
-		this.arena.setWidth(message.getConfMaxWidth());
-		this.arena.setHeight(message.getConfMaxHeight());
+		this.arena.setWidth(state.getConfMaxWidth());
+		this.arena.setHeight(state.getConfMaxHeight());
 		
-		this.ball.setPosition(new Vec2(message.getBallX(), message.getBallY()));
-		this.ball.setRadius(message.getConfBallRadius());
+		this.ball.setPosition(new Vec2(state.getBallX(), state.getBallY()));
+		this.ball.setRadius(state.getConfBallRadius());
 		
-		this.myPaddle.setUpperLeftCornerPosition(new Vec2(0,message.getLeftPlayerY()));
-		this.myPaddle.setHeight(message.getConfPaddleHeight());
-		this.myPaddle.setWidth(message.getConfPaddleWidth());
+		this.myPaddle.setUpperLeftCornerPosition(new Vec2(0,state.getLeftPlayerY()));
+		this.myPaddle.setHeight(state.getConfPaddleHeight());
+		this.myPaddle.setWidth(state.getConfPaddleWidth());
 		
-		this.opponentPaddle.setUpperLeftCornerPosition(new Vec2(message.getConfMaxWidth()-message.getConfPaddleWidth(),message.getRightPlayerY()));
-		this.opponentPaddle.setHeight(message.getConfPaddleHeight());
-		this.opponentPaddle.setWidth(message.getConfPaddleWidth());
+		this.opponentPaddle.setUpperLeftCornerPosition(new Vec2(state.getConfMaxWidth()-state.getConfPaddleWidth(),state.getRightPlayerY()));
+		this.opponentPaddle.setHeight(state.getConfPaddleHeight());
+		this.opponentPaddle.setWidth(state.getConfPaddleWidth());
 		
 	}
 	
@@ -71,6 +72,8 @@ public class Blueprint {
 	public long getTickInterval() {
 		return this.tickInterval;
 	}
+
+	
 
 	
 	
