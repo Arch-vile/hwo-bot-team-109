@@ -10,5 +10,6 @@ public interface Messenger  extends Runnable{
 	public SizedStack<InputMessage> getPositionMessages();
 	public void sendJoinMessage(String name);
 	public void sendPaddleMovementMessage(float paddleDirection);
-	
+	public InputMessage peekLatestPositionMessage();
+	public InputMessage popLatestPositionMessage();
 }

@@ -8,6 +8,7 @@ public class SocketMessenger  implements Messenger {
 
 	private SizedStack<InputMessage> controlMessages;
 	private SizedStack<InputMessage> positionMessages;
+	private InputMessage latestPositionMessage;
 	private BotSocket socket;
 	
 	public SocketMessenger(String host, int port){
@@ -31,7 +32,10 @@ public class SocketMessenger  implements Messenger {
 				try {
 					InputMessage message = new InputMessage(messageData);
 					if(message.isGameOverMessage() || message.isGameStartedMessage() || message.isJoinedMessage()) controlMessages.push(message);
-					if(message.isGameIsOnMessage()) positionMessages.push(message);
+					if(message.isGameIsOnMessage()){ 
+						positionMessages.push(message);
+						this.latestPositionMessage = message;
+					}
 				}catch(BadInputMessageException e){
 					System.err.println("Failed to parse input message: " + messageData);
 				}
@@ -70,7 +74,18 @@ public class SocketMessenger  implements Messenger {
 	}
 
 	
-	
+	@Override
+	public InputMessage peekLatestPositionMessage() {
+		return this.latestPositionMessage;
+	}
+
+
+	@Override
+	public InputMessage popLatestPositionMessage() {
+		InputMessage toReturn = this.latestPositionMessage;
+		this.latestPositionMessage = null;
+		return toReturn;
+	}
 	
 	
 }

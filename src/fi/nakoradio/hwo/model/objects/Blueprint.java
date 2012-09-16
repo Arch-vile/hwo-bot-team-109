@@ -12,6 +12,7 @@ public class Blueprint {
 	private Paddle opponentPaddle;
 	private Arena arena;
 	private long tickInterval;
+	private long timestamp;
 	
 	public Blueprint(){
 		
@@ -33,6 +34,7 @@ public class Blueprint {
 		if(this.arena == null) this.arena = new Arena(); 
 		
 		this.tickInterval = state.getConfTickInterval();
+		this.timestamp = state.getTime();
 		
 		this.arena.setWidth(state.getConfMaxWidth());
 		this.arena.setHeight(state.getConfMaxHeight());
@@ -71,6 +73,14 @@ public class Blueprint {
 
 	public long getTickInterval() {
 		return this.tickInterval;
+	}
+
+	public long getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
 	}
 
 	

@@ -1,4 +1,4 @@
-package fi.nakoradio.hwo.ai;
+package fi.nakoradio.hwo.ai;	
 
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.World;
@@ -15,13 +15,18 @@ public class Nostradamus {
 	
 	public Nostradamus(Blueprint blueprint) {
 		boolean forNostradamus = true;
-		this.world = new PhysicsWorld(new World(new Vec2(0,0),true), blueprint, true);
+		this.world = new PhysicsWorld(new World(new Vec2(0,0),true), blueprint, forNostradamus);
 		this.collisions = new DeathPointListener(world,"Nostradamus");
 	}
 	
 	public void update(Blueprint blueprint){
 		this.world.setObjectPositions(blueprint);
-		this.world.setBallSpeed(blueprint.getBall().getSpeed());
+		
+		if("d".length() < 2){
+			//this.world.setBallSpeed(blueprint.getBall().getSpeed());
+			System.err.println("todo in Nostradamus");
+			System.exit(1);
+		}
 		collisions.popDeathPoint();
 	}
 	
@@ -35,7 +40,13 @@ public class Nostradamus {
 		
 		//try { Thread.sleep(100000); } catch(Exception e){}
 		
-		while(collisions.getDeathPoint() == null){
+		collisions.popDeathPoint();
+		boolean ballIsMoving = (this.world.getBall().getLinearVelocity().length() != 0);
+		if(!ballIsMoving){
+			System.err.println("Ball is not moving. Will skip getting next death point.");
+		}
+		
+		while(ballIsMoving && collisions.getDeathPoint() == null){
 			world.getPhysics().step(1f/60f, 10, 8);
 			//try { Thread.sleep(1000/60); }catch(Exception e){ }
 			//vis.update(world.getCurrentState());
@@ -50,6 +61,13 @@ public class Nostradamus {
 	
 	public PhysicsWorld getWorld(){
 		return world;
+	}
+
+	public void forward(long milliseconds) {
+		int iterations = (int)(milliseconds / ((1f/60f)*1000));
+		for(int i = 0; i < iterations; i++){
+			world.getPhysics().step(1f/60f, 10, 8);
+		}
 	}
 	
 }

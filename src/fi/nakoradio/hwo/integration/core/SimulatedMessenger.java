@@ -11,9 +11,10 @@ public class SimulatedMessenger implements Messenger {
 
 	private SizedStack<InputMessage> controlMessages;
 	private SizedStack<InputMessage> positionMessages;
+	private InputMessage latestPositionMessage;
 	PhysicsWorld simulation;
 	
-	private boolean running = true;
+	private boolean running = false;
 	private Thread thread;
 	
 	public SimulatedMessenger(){
@@ -23,7 +24,8 @@ public class SimulatedMessenger implements Messenger {
 			initStateMessage = new InputMessage(initState);
 			Blueprint blueprint = new Blueprint(initStateMessage.getStateInTime());
 			this.simulation = new PhysicsWorld(new World(new Vec2(0,0), true), blueprint);
-			this.simulation.getBall().applyLinearImpulse(new Vec2(5000,7000), this.simulation.getBall().getPosition());
+			//xxxxthis.simulation.getBall().applyLinearImpulse(new Vec2(5000,7000), this.simulation.getBall().getPosition());
+			this.simulation.getBall().setLinearVelocity(new Vec2(200,200));
 			
 			this.controlMessages = new SizedStack<InputMessage>(50);
 			this.positionMessages = new SizedStack<InputMessage>(50);
@@ -36,20 +38,37 @@ public class SimulatedMessenger implements Messenger {
 	
 	@Override
 	public void run() {
+		this.running = true;
 		
+		long timeStamp = System.currentTimeMillis();
+		long latency = 20;
 		try{
 		
 			while(!Thread.interrupted() && this.running){
 				
 				simulation.getPhysics().step(1f/60f, 10, 8);
-				Thread.sleep(1000/60);
+				Thread.sleep(20);
 				
-				String messageData = this.getStateAsJSON();
-				try {
-					InputMessage message = new InputMessage(messageData);
-					this.positionMessages.push(message);
-				}catch (BadInputMessageException e){
-					System.err.println("Failed to parse input message. " + e + " - " + e.getCause());
+				// Lets simulate variable latency
+				if(System.currentTimeMillis()-timeStamp > latency){
+					timeStamp = System.currentTimeMillis();
+					
+					int random = (int)(Math.random()*1000);
+					if(random >= 0 && random < 700) latency = 20;
+					else if(random >= 700 && random < 980) latency = 300;
+					else if(random >= 980 && random < 992) latency = 1000;
+					else if(random >= 992 && random < 1000) latency = 5000;
+					else latency = 20;
+					latency = 300;
+					
+					String messageData = this.getStateAsJSON();
+					try {
+						InputMessage message = new InputMessage(messageData);
+						this.positionMessages.push(message);
+						this.latestPositionMessage = message;
+					}catch (BadInputMessageException e){
+						System.err.println("Failed to parse input message. " + e + " - " + e.getCause());
+					}
 				}
 				
 			}
@@ -127,6 +146,23 @@ public class SimulatedMessenger implements Messenger {
 	public PhysicsWorld getSimulation() {
 		return simulation;
 	}
+
+
+	@Override
+	public InputMessage peekLatestPositionMessage() {
+		return this.latestPositionMessage;
+	}
+
+
+	@Override
+	public InputMessage popLatestPositionMessage() {
+		InputMessage toReturn = this.latestPositionMessage;
+		this.latestPositionMessage = null;
+		return toReturn;
+	}
+
+
+	
 	
 	
 

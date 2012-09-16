@@ -2,5 +2,10 @@
 		// version showing this error is tagged in git as v1.1 "deathpointMismatch". it opens two simulations windows
 		
 		
-- make death point calculations one step forward so that paddle can be moved optimally
+- make death point calculations one step forward and make paddle to move optimized by these two points
 - for each loop make a end condition trigger to prevent eternal loops
+- how to react to latency
+- how to react if no messages are coming from server? should not be a problem as we have simulation. but paddle movement must be smart.
+- move all config variables to constants
+- find out what is this tick interval returned from interface
+- should we be ready for unordered list of input messages? 

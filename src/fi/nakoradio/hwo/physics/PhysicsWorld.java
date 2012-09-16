@@ -76,27 +76,6 @@ public class PhysicsWorld {
 		
 	}
 	
-	public void setBallSpeed(Vec2 speed){
-		if(this.ball != null){
-			// TODO: the speed is not calculated correctly. It will cause some problems? We are using speed here that we
-			// just have finetuned to make the ball move.
-			
-			// TODO: fix
-			if(speed.length() == 0){
-				System.err.println("Speed should not be 0");
-				System.exit(1);
-			}
-			
-			// TODO: If the speed is too low then the death point search in nostradamus will be in eternal loop of not moving
-			// or by hitting the wall in too slow speed to bounce
-			while(speed.length() < 100){
-				speed.mulLocal(2);
-			}
-
-			this.ball.setLinearVelocity(speed);
-		}
-	}
-	
 	
 	public Blueprint getCurrentState() {
 		StateInTime state = new StateInTime();
