@@ -1,0 +1,5 @@
+// TODO: NOTE: Printing death point at simulation and at nostradamus do not match exactly... is it something to worry about?
+		// version showing this error is tagged in git as v1.1 "deathpointMismatch". it opens two simulations windows
+		
+		
+-for nostredame always assume bounce from opponen paddle

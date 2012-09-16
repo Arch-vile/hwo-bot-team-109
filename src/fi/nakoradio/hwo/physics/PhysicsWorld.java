@@ -33,6 +33,7 @@ public class PhysicsWorld {
 	Body myDeathLine;
 	Body opponentDeathLine;
 	
+	Fixture myEnd;
 	
 	Blueprint blueprint;
 	
@@ -49,6 +50,8 @@ public class PhysicsWorld {
 	public void init(Blueprint blueprint){
 		this.update(blueprint);
 	}
+	
+	
 	
 	public void update(Blueprint blueprint, boolean staticWorld) {
 		//TODO: we really should copy the blueprint instead of reference as it could be shared between other models
@@ -68,8 +71,28 @@ public class PhysicsWorld {
 		if(!staticWorld){
 			
 			if(this.ball != null){
-				System.out.println("Ball speed: " + blueprint.getBall().getSpeed());
-				this.ball.applyLinearImpulse(blueprint.getBall().getSpeed(), this.ball.getPosition());
+				// TODO: the speed is not calculated correctly. It will cause some problems? We are using speed here that we
+				// just have finetuned to make the ball move.
+				
+				Vec2 speed = blueprint.getBall().getSpeed();
+				
+				// TODO: fix
+				if(speed.length() == 0){
+					System.err.println("Speed should not be 0");
+					System.exit(1);
+				}
+				
+				// TODO: If the speed is too low then the death point search in nostradamus will be in eternal loop of not moving
+				// or by hitting the wall in too slow speed to bounce
+				while(speed.length() < 100){
+					speed.mulLocal(2);
+				}
+
+				//speed.mulLocal( 1 / speed.length() ).mulLocal(1000);
+				
+				System.out.println("!!! IS BAD FIX !!! Speed: " + speed);
+				//this.ball.applyLinearImpulse(speed, this.ball.getPosition());
+				this.ball.setLinearVelocity(speed);
 			}
 		}
 		
@@ -153,7 +176,7 @@ public class PhysicsWorld {
 		this.arena.createFixture(fixture);
 
 		box.setAsEdge(new Vec2(0, height), new Vec2(0, 0));
-		this.arena.createFixture(fixture);
+		this.myEnd = this.arena.createFixture(fixture);
 
 	}
 
@@ -162,6 +185,7 @@ public class PhysicsWorld {
 		
 		BodyDef def = new BodyDef();
 		def.type = BodyType.DYNAMIC;
+		def.bullet = true;
 		def.position.set(ball.getPosition());
 		this.ball = getPhysics().createBody(def);
 		

@@ -22,15 +22,21 @@ public class CollisionListener implements ContactListener {
 	@Override
 	public void beginContact(Contact contact) {
 		
+		System.out.println("["+ id + "] collision ");
+		
+		
 		/*System.out.println("["+ id + "] collision ");
 		System.out.println("" + (contact.getFixtureA().getBody() == world.getMyDeathLine() || contact.getFixtureB().getBody() == world.getMyDeathLine() ));
 		System.out.println("" + (contact.getFixtureA().getBody() == world.getBall() || contact.getFixtureB().getBody() == world.getBall() ));
 		*/
 		if(		(contact.getFixtureA().getBody() == world.getMyDeathLine() || contact.getFixtureB().getBody() == world.getMyDeathLine() ) &&
 				(contact.getFixtureA().getBody() == world.getBall() || contact.getFixtureB().getBody() == world.getBall() )){
-			this.deathPoint = world.getBall().getPosition();
+			// TODO: Other cases where we should copy instead of reference? Here the balls vector is changing so the deathPoint keeps changing also
+			this.deathPoint = new Vec2(world.getBall().getPosition());
 			System.out.println("["+ id + "] DEATH AT: " + deathPoint);
 		}
+		
+		
 	}
 
 	@Override

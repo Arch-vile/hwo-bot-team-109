@@ -37,6 +37,7 @@ public class Ball {
 		if(position == null || previousPosition == null)
 			return new Vec2(0,0);
 		
+		// TODO: speed is calculated wrong? as it is has no correlation to time. it is so small we need to multiply
 		Vec2 speed = this.position.sub(previousPosition).mul(1000);
 		return speed;
 	}
