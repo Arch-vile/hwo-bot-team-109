@@ -4,32 +4,28 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.World;
 
 import fi.nakoradio.hwo.model.objects.Blueprint;
-import fi.nakoradio.hwo.physics.CollisionListener;
+import fi.nakoradio.hwo.physics.DeathPointListener;
 import fi.nakoradio.hwo.physics.PhysicsWorld;
 import fi.nakoradio.hwo.physics.visualization.GameVisualizer;
 
 public class Nostradamus {
 
-	CollisionListener collisions;
+	DeathPointListener collisions;
 	PhysicsWorld world;
 	
-	public Nostradamus() {
-		this.world = new PhysicsWorld(new World(new Vec2(0,0),true));
-		this.collisions = new CollisionListener(world,"Nostradamus");
-		this.world.getPhysics().setContactListener(collisions);
+	public Nostradamus(Blueprint blueprint) {
+		boolean forNostradamus = true;
+		this.world = new PhysicsWorld(new World(new Vec2(0,0),true), blueprint, true);
+		this.collisions = new DeathPointListener(world,"Nostradamus");
 	}
 	
-	public void update(Blueprint blueprint, boolean staticWorld){
-		this.world.update(blueprint, staticWorld);
+	public void update(Blueprint blueprint){
+		this.world.setObjectPositions(blueprint);
+		this.world.setBallSpeed(blueprint.getBall().getSpeed());
 		collisions.popDeathPoint();
 	}
 	
-	public void set(Blueprint blueprint, boolean staticWorld){
-		this.world = new PhysicsWorld(new World(new Vec2(0,0),true), blueprint);
-		this.collisions = new CollisionListener(world,"Nostradamus");
-		this.world.getPhysics().setContactListener(collisions);
-		this.world.update(blueprint, staticWorld);
-	}
+	
 
 	public Vec2 getNextDeathPoint(){
 		
@@ -39,7 +35,6 @@ public class Nostradamus {
 		
 		//try { Thread.sleep(100000); } catch(Exception e){}
 		
-		System.out.println("Started death search");
 		while(collisions.getDeathPoint() == null){
 			world.getPhysics().step(1f/60f, 10, 8);
 			//try { Thread.sleep(1000/60); }catch(Exception e){ }
@@ -48,7 +43,6 @@ public class Nostradamus {
 			//System.out.println(world.getBall().getPosition());
 				
 		}
-		System.out.println("ENDED death search");
 		
 		Vec2 deathPoint = collisions.popDeathPoint();
 		return deathPoint;

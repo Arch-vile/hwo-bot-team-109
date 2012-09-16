@@ -43,64 +43,60 @@ public class PhysicsWorld {
 	
 	public PhysicsWorld(World world, Blueprint blueprint){
 		this.world = world;
-		init(blueprint);
+		this.createObjects(blueprint, false);
+	}
+	
+	public PhysicsWorld(World world, Blueprint blueprint, boolean forNostradamus){
+		this.world = world;
+		this.createObjects(blueprint, forNostradamus);
 	}
 	
 	// TODO: JBox2d recommends using values in range 0-10 for sizes. This could yield to performance gains and accuracy. Need to scale down here?
-	public void init(Blueprint blueprint){
-		this.update(blueprint);
+	public void createObjects(Blueprint blueprint, boolean forNostradamus){
+		this.blueprint = blueprint;
+		createWalls(blueprint.getArena());
+		createBall(blueprint.getBall());
+		this.myPaddle = createPaddle(blueprint.getMyPaddle());
+		this.opponentPaddle = createPaddle(blueprint.getMyPaddle());
+		
+		if(forNostradamus) createMyDeathLine(blueprint);
+		if(forNostradamus) createOpponentDeathLine(blueprint);
 	}
 	
 	
-	
-	public void update(Blueprint blueprint, boolean staticWorld) {
+	public void setObjectPositions(Blueprint blueprint) {
+		
 		//TODO: we really should copy the blueprint instead of reference as it could be shared between other models
 		this.blueprint = blueprint;
-		if(this.arena == null) createWalls(blueprint.getArena());
-		if(this.ball == null) createBall(blueprint.getBall());
-		if(this.myPaddle == null) this.myPaddle = createPaddle(blueprint.getMyPaddle());
-		if(this.opponentPaddle == null) this.opponentPaddle = createPaddle(blueprint.getMyPaddle());
-		if(this.myDeathLine == null) createMyDeathLine(blueprint);
-		//if(this.opponentDeathLine == null) this.opponentDeathLine = createOpponentDeathLine(blueprint);
 		
 		// TODO: we do not detect changes in static arena variables. etc width, height and radius
 		if(this.ball != null) this.ball.setTransform(blueprint.getBall().getPosition(),0);
 		if(this.myPaddle != null) this.myPaddle.setTransform(blueprint.getMyPaddle().getCenterPosition(), 0);
 		if(this.opponentPaddle != null) this.opponentPaddle.setTransform(blueprint.getOpponentPaddle().getCenterPosition(), 0);
 		
-		if(!staticWorld){
-			
-			if(this.ball != null){
-				// TODO: the speed is not calculated correctly. It will cause some problems? We are using speed here that we
-				// just have finetuned to make the ball move.
-				
-				Vec2 speed = blueprint.getBall().getSpeed();
-				
-				// TODO: fix
-				if(speed.length() == 0){
-					System.err.println("Speed should not be 0");
-					System.exit(1);
-				}
-				
-				// TODO: If the speed is too low then the death point search in nostradamus will be in eternal loop of not moving
-				// or by hitting the wall in too slow speed to bounce
-				while(speed.length() < 100){
-					speed.mulLocal(2);
-				}
-
-				//speed.mulLocal( 1 / speed.length() ).mulLocal(1000);
-				
-				System.out.println("!!! IS BAD FIX !!! Speed: " + speed);
-				//this.ball.applyLinearImpulse(speed, this.ball.getPosition());
-				this.ball.setLinearVelocity(speed);
-			}
-		}
-		
 	}
 	
-	public void update(Blueprint blueprint) {
-		update(blueprint, true);
+	public void setBallSpeed(Vec2 speed){
+		if(this.ball != null){
+			// TODO: the speed is not calculated correctly. It will cause some problems? We are using speed here that we
+			// just have finetuned to make the ball move.
+			
+			// TODO: fix
+			if(speed.length() == 0){
+				System.err.println("Speed should not be 0");
+				System.exit(1);
+			}
+			
+			// TODO: If the speed is too low then the death point search in nostradamus will be in eternal loop of not moving
+			// or by hitting the wall in too slow speed to bounce
+			while(speed.length() < 100){
+				speed.mulLocal(2);
+			}
+
+			this.ball.setLinearVelocity(speed);
+		}
 	}
+	
 	
 	public Blueprint getCurrentState() {
 		StateInTime state = new StateInTime();
@@ -124,12 +120,27 @@ public class PhysicsWorld {
 
 	
 	
-	private Body createOpponentDeathLine(Blueprint blueprint) {
-		return null;
+	private void createOpponentDeathLine(Blueprint blueprint) {
+		
+		BodyDef edgeBodyDef = new BodyDef();
+		edgeBodyDef.position.set(0, 0);
+		this.opponentDeathLine = getPhysics().createBody(edgeBodyDef);
+
+		PolygonShape box = new PolygonShape();
+		FixtureDef fixture = new FixtureDef();
+		fixture.shape = box;
+		fixture.isSensor = false;
+		fixture.filter.categoryBits = CATEGORY_SENSORS;
+		fixture.filter.maskBits = CATEGORY_BALL; // Only collide with Ball
+
+		float deathLineDistanceFromRightWall = blueprint.getOpponentPaddle().getWidth();
+		float deathLinex = blueprint.getArena().getWidth() - deathLineDistanceFromRightWall;
+		float deathLineHeight = blueprint.getArena().getHeight();
+		box.setAsEdge(new Vec2(deathLinex, 0), new Vec2(deathLinex, deathLineHeight));
+		this.opponentDeathLine.createFixture(fixture);
 	}
 
 	private void createMyDeathLine(Blueprint blueprint) {
-		if(blueprint.getMyPaddle() == null || blueprint.getArena() == null) return;
 		
 		BodyDef edgeBodyDef = new BodyDef();
 		edgeBodyDef.position.set(0, 0);
@@ -138,7 +149,7 @@ public class PhysicsWorld {
 		PolygonShape box = new PolygonShape();
 		FixtureDef fixture = new FixtureDef();
 		fixture.shape = box;
-		fixture.isSensor = true;
+		fixture.isSensor = false;
 		fixture.filter.categoryBits = CATEGORY_SENSORS;
 		fixture.filter.maskBits = CATEGORY_BALL; // Only collide with Ball
 
@@ -161,6 +172,7 @@ public class PhysicsWorld {
 		FixtureDef fixture = new FixtureDef();
 		fixture.shape = box;
 		fixture.filter.categoryBits = CATEGORY_BOUNDARY;
+		fixture.filter.maskBits = CATEGORY_BALL; // Only collide with Ball
 
 		float width = arena.getWidth();
 		float height = arena.getHeight();
@@ -214,9 +226,9 @@ public class PhysicsWorld {
 	    FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = groundBox;
 		fixtureDef.density = 1f;
-		// TODO: Should we prevent paddle from colliding with the boundary
 		fixtureDef.filter.categoryBits = CATEGORY_PADDLE;
-	    
+		fixtureDef.filter.maskBits = CATEGORY_BALL; // Only collide with Ball
+		
 		paddleToCreate.createFixture(fixtureDef);
 	    return paddleToCreate;
 	}

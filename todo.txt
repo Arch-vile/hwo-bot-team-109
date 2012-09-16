@@ -2,4 +2,5 @@
 		// version showing this error is tagged in git as v1.1 "deathpointMismatch". it opens two simulations windows
 		
 		
--for nostredame always assume bounce from opponen paddle
+- make death point calculations one step forward so that paddle can be moved optimally
+- for each loop make a end condition trigger to prevent eternal loops

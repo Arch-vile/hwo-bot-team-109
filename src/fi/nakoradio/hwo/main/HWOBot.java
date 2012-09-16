@@ -14,7 +14,7 @@ import fi.nakoradio.hwo.integration.core.Messenger;
 import fi.nakoradio.hwo.integration.core.SimulatedMessenger;
 import fi.nakoradio.hwo.integration.core.SocketMessenger;
 import fi.nakoradio.hwo.model.objects.Blueprint;
-import fi.nakoradio.hwo.physics.CollisionListener;
+import fi.nakoradio.hwo.physics.DeathPointListener;
 import fi.nakoradio.hwo.physics.PhysicsUtil;
 import fi.nakoradio.hwo.physics.PhysicsWorld;
 import fi.nakoradio.hwo.physics.visualization.Box2dTest;
@@ -32,24 +32,27 @@ public class HWOBot {
 		//Messenger messenger = new SocketMessenger(host, new Integer(port));
 		Messenger messenger = new SimulatedMessenger();
 		messenger.start();
+		//DeathPointListener list = new DeathPointListener(((SimulatedMessenger)messenger).getSimulation(), "Simulation");
+		
 		
 		int playCount = 20;
 		boolean running = true;
 		
-		Blueprint blueprint = new Blueprint();
-		
-		
 		GameVisualizer visualizer = new GameVisualizer();
 		visualizer.start();
-		
-		Nostradamus nostradamus = new Nostradamus();
+		try { Thread.sleep(500); } catch(Exception e){}
 		
 		messenger.sendJoinMessage(botname);
 		
-		long lastTimestamp = System.currentTimeMillis();
 		
-		Blueprint foo = null;
-		int counter = 0;
+		// Wait for the first position message
+		while(messenger.getPositionMessages().empty()) { try { Thread.sleep(10); } catch(Exception e){} }
+		Blueprint blueprint = new Blueprint(messenger.getPositionMessages().peek().getStateInTime());
+		Nostradamus nostradamus = new Nostradamus(blueprint);
+		visualizer.update(blueprint);
+		
+		
+		long lastTimestamp = System.currentTimeMillis();
 		while(running){
 			
 			try { Thread.sleep(20); } catch(Exception e){}
@@ -76,13 +79,15 @@ public class HWOBot {
 			}
 			
 			if(System.currentTimeMillis() - lastTimestamp > 2000){
+				if(nostradamus == null) nostradamus = new Nostradamus(blueprint);
 				lastTimestamp = System.currentTimeMillis();
-				nostradamus.update(blueprint, false); 
+				nostradamus.update(blueprint); 
 				
-				System.out.println("Nostradamus is predicting deathpoint");
-				Vec2 deathPoint = nostradamus.getNextDeathPoint();
-				System.out.println("And the prophesy is: " + deathPoint);
-				PhysicsUtil.alterY(((SimulatedMessenger)messenger).getSimulation().getMyPaddle(),deathPoint);
+			//	System.out.println("Nostradamus is predicting deathpoints");
+				Vec2 firstPoint = nostradamus.getNextDeathPoint();
+				Vec2 secondPoint = nostradamus.getNextDeathPoint();
+				System.out.println("And the prophesy is first hit " + firstPoint + " and then " + secondPoint);
+				PhysicsUtil.alterY(((SimulatedMessenger)messenger).getSimulation().getMyPaddle(),firstPoint);
 			}
 			
 		}
