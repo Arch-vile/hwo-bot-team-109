@@ -38,21 +38,15 @@ public class ServerClone {
 			// we are going too slow
 			if(simulatedDistance > BALL_MIN_DISTANCE_CALC && actualDistance > BALL_MIN_DISTANCE_CALC && simulatedDistance < actualDistance){
 				System.out.println("We are going too slow");
-				float newMultip = actualDistance / simulatedDistance;
-				if(newMultip > speedMultiplier){
-					this.speedMultiplier = newMultip;
-					System.out.println("Increased speed multiplier to: " + newMultip);
-				}
+				this.speedMultiplier += 0.01;
+				System.out.println("Decreased speed multiplier to: " + this.speedMultiplier);
 			}
 				
 			// we are going too fast
 			if(simulatedDistance > BALL_MIN_DISTANCE_CALC && actualDistance > BALL_MIN_DISTANCE_CALC && simulatedDistance > actualDistance){
 				System.out.println("We are going too fast");
-				float newMultip = actualDistance / simulatedDistance;
-				if(newMultip < speedMultiplier){
-					this.speedMultiplier = newMultip;
-					System.out.println("Decreased speed multiplier to: " + newMultip);
-				}
+				this.speedMultiplier -= 0.01;
+				System.out.println("Decreased speed multiplier to: " + this.speedMultiplier);
 			}
 		}
 		
@@ -96,7 +90,10 @@ public class ServerClone {
 			return new Vec2(0,0);
 		
 		long elapsedTime = blueprint.getTimestamp() - this.ballOriginTime;
-		float speedValue = ( distance.length() / elapsedTime*1000 );
+		float speedValue = ( distance.length() / elapsedTime * 1000 ); if we set this to 0 then for some reason speedmultiplier is not counted
+		likely because with speed 0 there is problem with something in multip calcualtor part
+		System.out.println(speedValue);
+		
 		distance.normalize();
 		Vec2 speed = distance.mul(speedValue);
 		

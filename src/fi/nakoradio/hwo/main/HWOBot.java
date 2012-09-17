@@ -31,8 +31,8 @@ public class HWOBot {
 		String host = args[1];
 		String port = args[2];
 		
-		//Messenger messenger = new SocketMessenger(host, new Integer(port));
-		Messenger messenger = new SimulatedMessenger();
+		Messenger messenger = new SocketMessenger(host, new Integer(port));
+		//Messenger messenger = new SimulatedMessenger();
 		messenger.start();
 		//DeathPointListener list = new DeathPointListener(((SimulatedMessenger)messenger).getSimulation(), "Simulation");
 		
@@ -40,8 +40,8 @@ public class HWOBot {
 		int playCount = 20;
 		boolean running = true;
 		
-		GameVisualizer visualizer = new GameVisualizer();
-		visualizer.start();
+		//GameVisualizer visualizer = new GameVisualizer();
+		//visualizer.start();
 		GameVisualizer visualizer2 = new GameVisualizer();
 		visualizer2.start();
 		try { Thread.sleep(500); } catch(Exception e){}
@@ -49,7 +49,7 @@ public class HWOBot {
 		messenger.sendJoinMessage(botname);
 		//PaddleMover paddleMover = new PaddleMover(messenger);
 		
-		
+		System.out.println("Waiting first position message");
 		// Wait for the first position message
 		while(messenger.peekLatestPositionMessage() == null) { try { Thread.sleep(10); } catch(Exception e){} }
 		
@@ -58,11 +58,13 @@ public class HWOBot {
 		//Nostradamus nostradamus = new Nostradamus(blueprint);
 		ServerClone serverClone = new ServerClone(blueprint);
 		
-		visualizer.update(blueprint);
+		//visualizer.update(blueprint);
 		visualizer2.update(blueprint);
 		
 		long lastTimestamp = System.currentTimeMillis();
 		int counter = 0;
+		
+		System.out.println("Starting main loop");
 		while(running){
 			
 			try { Thread.sleep(20); } catch(Exception e){ System.err.println("Error in main program sleep");}
@@ -70,10 +72,14 @@ public class HWOBot {
 			if(messenger.peekLatestPositionMessage() != null){
 				InputMessage positionMessage = messenger.popLatestPositionMessage();
 				blueprint = new Blueprint(positionMessage.getStateInTime());
-				visualizer.update(blueprint);
+			//	visualizer.update(blueprint);
 				
 				serverClone.update(blueprint);
 			}
+			
+			if(!messenger.getControlMessages().empty())
+			System.out.println(messenger.getControlMessages().pop().getMessage());
+			
 			
 			/*long forward = System.currentTimeMillis() - lastTimestamp;
 			lastTimestamp = System.currentTimeMillis();
