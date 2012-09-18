@@ -17,15 +17,15 @@ public class SimulatedMessenger implements Messenger {
 	private boolean running = false;
 	private Thread thread;
 	
-	public SimulatedMessenger(){
-		String initState = "{\"msgType\":\"gameIsOn\",\"data\":{\"time\":1347651768367,\"left\":{\"y\":240.0,\"playerName\":\"randombot\"},\"right\":{\"y\":240.0,\"playerName\":\"becker\"},\"ball\":{\"pos\":{\"x\":571.0496379848345,\"y\":159.49839994531766}},\"conf\":{\"maxWidth\":640,\"maxHeight\":480,\"paddleHeight\":50,\"paddleWidth\":10,\"ballRadius\":5,\"tickInterval\":30}}}";
+	public SimulatedMessenger(){ //y:159
+		String initState = "{\"msgType\":\"gameIsOn\",\"data\":{\"time\":1347651768367,\"left\":{\"y\":240.0,\"playerName\":\"randombot\"},\"right\":{\"y\":240.0,\"playerName\":\"becker\"},\"ball\":{\"pos\":{\"x\":200.0,\"y\":20.4}},\"conf\":{\"maxWidth\":640,\"maxHeight\":480,\"paddleHeight\":50,\"paddleWidth\":10,\"ballRadius\":5,\"tickInterval\":30}}}";
 		InputMessage initStateMessage = null;
 		try {
 			initStateMessage = new InputMessage(initState);
 			Blueprint blueprint = new Blueprint(initStateMessage.getStateInTime());
 			this.simulation = new PhysicsWorld(new World(new Vec2(0,0), true), blueprint);
 			//xxxxthis.simulation.getBall().applyLinearImpulse(new Vec2(5000,7000), this.simulation.getBall().getPosition());
-			this.simulation.getBall().setLinearVelocity(new Vec2(200,200));
+			this.simulation.getBall().setLinearVelocity(new Vec2(200,-10));
 			
 			this.controlMessages = new SizedStack<InputMessage>(50);
 			this.positionMessages = new SizedStack<InputMessage>(50);
@@ -59,7 +59,7 @@ public class SimulatedMessenger implements Messenger {
 					else if(random >= 980 && random < 992) latency = 1000;
 					else if(random >= 992 && random < 1000) latency = 5000;
 					else latency = 20;
-					latency = 300;
+					latency = 20;
 					
 					String messageData = this.getStateAsJSON();
 					try {

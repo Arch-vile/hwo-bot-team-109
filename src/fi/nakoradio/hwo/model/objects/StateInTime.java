@@ -7,6 +7,8 @@ public class StateInTime {
 	private float rightPlayerY;
 	private float ballX;
 	private float ballY;
+	private float phantomX;
+	private float phantomY;
 	private float confMaxWidth;
 	private float confMaxHeight;
 	private float confPaddleHeight;
@@ -79,6 +81,20 @@ public class StateInTime {
 	public void setConfTickInterval(long confTickInterval) {
 		this.confTickInterval = confTickInterval;
 	}
+	public float getPhantomX() {
+		return phantomX;
+	}
+	public void setPhantomX(float phantomX) {
+		this.phantomX = phantomX;
+	}
+	public float getPhantomY() {
+		return phantomY;
+	}
+	public void setPhantomY(float phantomY) {
+		this.phantomY = phantomY;
+	}
+	
+	
 	
 	
 	

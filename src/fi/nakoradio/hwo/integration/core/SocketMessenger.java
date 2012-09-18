@@ -29,6 +29,7 @@ public class SocketMessenger  implements Messenger {
 			BufferedReader in = new BufferedReader(this.socket.getIn());
 			String messageData = "";
 			while (!Thread.interrupted() && (messageData = in.readLine()) != null) {
+				long timestamp = System.currentTimeMillis();
 				try {
 					InputMessage message = new InputMessage(messageData);
 					if(message.isGameOverMessage() || message.isGameStartedMessage() || message.isJoinedMessage()) controlMessages.push(message);
@@ -36,6 +37,7 @@ public class SocketMessenger  implements Messenger {
 						positionMessages.push(message);
 						this.latestPositionMessage = message;
 					}
+					
 				}catch(BadInputMessageException e){
 					System.err.println("Failed to parse input message: " + messageData);
 				}

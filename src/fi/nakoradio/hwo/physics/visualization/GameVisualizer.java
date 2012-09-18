@@ -29,7 +29,7 @@ public class GameVisualizer {
 	public void update(Blueprint blueprint){
 		if(this.simulation == null)
 			this.simulation = new PhysicsWorld(this.world, blueprint);
-		this.simulation.setObjectPositions(blueprint);
+		this.simulation.setObjectPositions(blueprint, true);
 	}
 
 	public PhysicsWorld getWorld(){

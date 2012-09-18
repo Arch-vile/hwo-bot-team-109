@@ -20,7 +20,7 @@ public class Nostradamus {
 	}
 	
 	public void update(Blueprint blueprint){
-		this.world.setObjectPositions(blueprint);
+		this.world.setObjectPositions(blueprint,false);
 		
 		if("d".length() < 2){
 			//this.world.setBallSpeed(blueprint.getBall().getSpeed());

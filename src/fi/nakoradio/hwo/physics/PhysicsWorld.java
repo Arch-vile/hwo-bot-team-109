@@ -28,6 +28,7 @@ public class PhysicsWorld {
 	World world;
 	Body arena;
 	Body ball;
+	Body phantom;
 	Body myPaddle;
 	Body opponentPaddle;
 	Body myDeathLine;
@@ -40,6 +41,8 @@ public class PhysicsWorld {
 	public PhysicsWorld(World world){
 		this.world = world;
 	}
+	
+	
 	
 	public PhysicsWorld(World world, Blueprint blueprint){
 		this.world = world;
@@ -56,6 +59,7 @@ public class PhysicsWorld {
 		this.blueprint = blueprint;
 		createWalls(blueprint.getArena());
 		createBall(blueprint.getBall());
+		createPhantom(blueprint.getBall());
 		this.myPaddle = createPaddle(blueprint.getMyPaddle());
 		this.opponentPaddle = createPaddle(blueprint.getMyPaddle());
 		
@@ -64,13 +68,14 @@ public class PhysicsWorld {
 	}
 	
 	
-	public void setObjectPositions(Blueprint blueprint) {
+	public void setObjectPositions(Blueprint blueprint, boolean updatePhantom) {
 		
 		//TODO: we really should copy the blueprint instead of reference as it could be shared between other models
 		this.blueprint = blueprint;
 		
 		// TODO: we do not detect changes in static arena variables. etc width, height and radius
 		if(this.ball != null) this.ball.setTransform(blueprint.getBall().getPosition(),0);
+		if(updatePhantom && this.phantom != null && blueprint.getPhantom() != null) this.phantom.setTransform(blueprint.getPhantom().getPosition(),0);
 		if(this.myPaddle != null) this.myPaddle.setTransform(blueprint.getMyPaddle().getCenterPosition(), 0);
 		if(this.opponentPaddle != null) this.opponentPaddle.setTransform(blueprint.getOpponentPaddle().getCenterPosition(), 0);
 		
@@ -81,6 +86,8 @@ public class PhysicsWorld {
 		StateInTime state = new StateInTime();
 		state.setBallX(getBall().getPosition().x);
 		state.setBallY(getBall().getPosition().y);
+		state.setPhantomX(getPhantom().getPosition().x);
+		state.setPhantomY(getPhantom().getPosition().y);
 		state.setLeftPlayerY(getMyPaddle().getPosition().y);
 		state.setRightPlayerY(getOpponentPaddle().getPosition().y);
 		
@@ -99,6 +106,10 @@ public class PhysicsWorld {
 
 	
 	
+	public Body getPhantom() {
+		return phantom;
+	}
+
 	private void createOpponentDeathLine(Blueprint blueprint) {
 		
 		BodyDef edgeBodyDef = new BodyDef();
@@ -176,7 +187,7 @@ public class PhysicsWorld {
 		
 		BodyDef def = new BodyDef();
 		def.type = BodyType.DYNAMIC;
-		def.bullet = true;
+		def.bullet = true; //TODO: is needed?
 		def.position.set(ball.getPosition());
 		this.ball = getPhysics().createBody(def);
 		
@@ -188,7 +199,31 @@ public class PhysicsWorld {
 		fixtureDef.friction = 0f;
 		fixtureDef.restitution = 1f;
 		fixtureDef.filter.categoryBits = CATEGORY_BALL;
+		fixtureDef.filter.maskBits = CATEGORY_BOUNDARY | CATEGORY_PADDLE | CATEGORY_SENSORS;
 		this.ball.createFixture(fixtureDef);
+		
+	
+	}
+	
+	private void createPhantom(Ball ball) {
+		if(ball == null) return;
+		
+		BodyDef def = new BodyDef();
+		def.type = BodyType.DYNAMIC;
+		def.bullet = true; //
+		def.position.set(ball.getPosition());
+		this.phantom = getPhysics().createBody(def);
+		
+		CircleShape ballShape = new CircleShape();
+		ballShape.m_radius = ball.getRadius();
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = ballShape;
+		fixtureDef.density = 1f;
+		fixtureDef.friction = 0f;
+		fixtureDef.restitution = 1f;
+		fixtureDef.filter.categoryBits = CATEGORY_BALL;
+		fixtureDef.filter.maskBits = CATEGORY_BOUNDARY | CATEGORY_PADDLE | CATEGORY_SENSORS;
+		this.phantom.createFixture(fixtureDef);
 		
 	}
 	
@@ -198,6 +233,7 @@ public class PhysicsWorld {
 		//TODO: Should we have the friction and restitution here set similar to ball?
 		BodyDef def = new BodyDef();
 		def.position.set(paddle.getCenterPosition());
+		def.type = BodyType.KINEMATIC;
 		Body paddleToCreate = getPhysics().createBody(def);
 	    PolygonShape groundBox = new PolygonShape();
 	    groundBox.setAsBox(paddle.getWidth()/2,paddle.getHeight()/2);
@@ -205,6 +241,8 @@ public class PhysicsWorld {
 	    FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = groundBox;
 		fixtureDef.density = 1f;
+		fixtureDef.friction = 0f;
+		fixtureDef.restitution = 0f;
 		fixtureDef.filter.categoryBits = CATEGORY_PADDLE;
 		fixtureDef.filter.maskBits = CATEGORY_BALL; // Only collide with Ball
 		

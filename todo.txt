@@ -9,3 +9,6 @@
 - move all config variables to constants
 - find out what is this tick interval returned from interface
 - should we be ready for unordered list of input messages? 
+- also be ready to handle messages that have somewhat unacceptable fields.. etc. coordinates with too many decimals -> substring them
+- FAQ: Miten liikkessä olevan mailan osuma palloon vaikuttaa pallon lentorataan?
+	Olisi aika tylsää paljastaa huipputieteellisen fysiikkamoottorin käyttämät yhtälöt, joten pidetään jännitystä yllä ja suositellaan empiiristä lähestymistapaa. 100% realistista tennisfysiikkaa lienee kuitenkin turha odottaa.

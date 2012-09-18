@@ -32,7 +32,7 @@ public class HWOBot {
 		String port = args[2];
 		
 		Messenger messenger = new SocketMessenger(host, new Integer(port));
-		//Messenger messenger = new SimulatedMessenger();
+	//	Messenger messenger = new SimulatedMessenger();
 		messenger.start();
 		//DeathPointListener list = new DeathPointListener(((SimulatedMessenger)messenger).getSimulation(), "Simulation");
 		
@@ -52,9 +52,10 @@ public class HWOBot {
 		System.out.println("Waiting first position message");
 		// Wait for the first position message
 		while(messenger.peekLatestPositionMessage() == null) { try { Thread.sleep(10); } catch(Exception e){} }
+		System.out.println(messenger.peekLatestPositionMessage().getMessage());
 		
 		// Set up the initial situation
-		Blueprint blueprint = new Blueprint(messenger.peekLatestPositionMessage().getStateInTime());
+		Blueprint blueprint = new Blueprint(messenger.popLatestPositionMessage().getStateInTime());
 		//Nostradamus nostradamus = new Nostradamus(blueprint);
 		ServerClone serverClone = new ServerClone(blueprint);
 		
@@ -64,45 +65,57 @@ public class HWOBot {
 		long lastTimestamp = System.currentTimeMillis();
 		int counter = 0;
 		
+		float t = 0;
+		float dt = 1f / 60f;
+		float tickInterval = ((float)blueprint.getTickInterval())/1000f;
 		System.out.println("Starting main loop");
+		boolean setPhantomToBall = true;
 		while(running){
 			
-			try { Thread.sleep(20); } catch(Exception e){ System.err.println("Error in main program sleep");}
+			try { Thread.sleep(blueprint.getTickInterval()); } catch(Exception e){ System.err.println("Error in main program sleep");}
+			
+			
+			if(serverClone.getSimulation().getBall().getPosition().x > 600){
+				setPhantomToBall = false;
+			}
+			
+			if(serverClone.getSimulation().getBall().getPosition().x < 50){
+				setPhantomToBall = true;
+			}
+			
+			
+			while(!messenger.getControlMessages().empty()){
+				InputMessage m = messenger.getControlMessages().pop();
+				if(m.isGameOverMessage()){
+					setPhantomToBall = true;
+					lastTimestamp = System.currentTimeMillis();
+				}
+			}
 			
 			if(messenger.peekLatestPositionMessage() != null){
 				InputMessage positionMessage = messenger.popLatestPositionMessage();
 				blueprint = new Blueprint(positionMessage.getStateInTime());
-			//	visualizer.update(blueprint);
 				
-				serverClone.update(blueprint);
+			//	if(System.currentTimeMillis() - lastTimestamp > 1200)
+			//		setPhantomToBall = false;
+				
+				if(setPhantomToBall)
+					blueprint.getPhantom().setPosition(new Vec2(blueprint.getBall().getPosition().x, blueprint.getBall().getPosition().y+0));
+					
+				serverClone.update(blueprint, setPhantomToBall);
 			}
 			
-			if(!messenger.getControlMessages().empty())
-			System.out.println(messenger.getControlMessages().pop().getMessage());
-			
-			
-			/*long forward = System.currentTimeMillis() - lastTimestamp;
-			lastTimestamp = System.currentTimeMillis();
-			serverClone.forward((int)(forward*serverClone.getSpeedMultiplier()));
-			*/
-			serverClone.forwardToPresent();
+			// TODO: do we do this even if the state is updated by message? try without
+			//serverClone.forward(blueprint.getTickInterval());
+			if(setPhantomToBall == false){
+				while(t < tickInterval - 0.02){
+					serverClone.getSimulation().getPhysics().step(dt, 10, 8);
+					t += dt;
+				}
+				t = (tickInterval - ( t - dt ))*-1;
+			}
 			
 			visualizer2.update(serverClone.getSimulation().getCurrentState());
-			
-			/*if(System.currentTimeMillis() - lastTimestamp > 2000000){
-				lastTimestamp = System.currentTimeMillis();
-				nostradamus.update(blueprint); 
-				
-			//	System.out.println("Nostradamus is predicting deathpoints");
-				Vec2 firstPoint = nostradamus.getNextDeathPoint();
-				Vec2 secondPoint = nostradamus.getNextDeathPoint();
-				System.out.println("And the prophesy is first hit " + firstPoint + " and then " + secondPoint);
-				
-			//	paddleMover.move(firstPoint);
-				
-				// This is just cheating ;)
-				PhysicsUtil.alterY(((SimulatedMessenger)messenger).getSimulation().getMyPaddle(),firstPoint);
-			}*/
 			
 		}
 		

@@ -8,6 +8,7 @@ import fi.nakoradio.hwo.integration.core.InputMessage;
 public class Blueprint {
 
 	private Ball ball;
+	private Ball phantom;
 	private Paddle myPaddle;
 	private Paddle opponentPaddle;
 	private Arena arena;
@@ -29,6 +30,7 @@ public class Blueprint {
 	
 	public void update(StateInTime state){
 		if(this.ball == null) this.ball = new Ball();
+		if(this.phantom == null) this.phantom = new Ball();
 		if(this.myPaddle == null) this.myPaddle = new Paddle();
 		if(this.opponentPaddle == null) this.opponentPaddle = new Paddle();
 		if(this.arena == null) this.arena = new Arena(); 
@@ -41,6 +43,9 @@ public class Blueprint {
 		
 		this.ball.setPosition(new Vec2(state.getBallX(), state.getBallY()));
 		this.ball.setRadius(state.getConfBallRadius());
+		
+		this.phantom.setPosition(new Vec2(state.getPhantomX(), state.getPhantomY()));
+		this.phantom.setRadius(state.getConfBallRadius());
 		
 		this.myPaddle.setUpperLeftCornerPosition(new Vec2(0,state.getLeftPlayerY()));
 		this.myPaddle.setHeight(state.getConfPaddleHeight());
@@ -83,10 +88,9 @@ public class Blueprint {
 		this.timestamp = timestamp;
 	}
 
-	
-
-	
-	
+	public Ball getPhantom() {
+		return phantom;
+	}
 	
 	
 }

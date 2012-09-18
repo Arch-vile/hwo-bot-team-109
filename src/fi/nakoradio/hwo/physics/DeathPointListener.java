@@ -22,6 +22,10 @@ public class DeathPointListener implements ContactListener {
 	
 	@Override
 	public void beginContact(Contact contact) {
+		System.out.println("Contact " + System.currentTimeMillis());
+		
+		
+
 		
 		//System.out.println("["+ id + "] collision ball at: " + world.getBall().getPosition());
 		
