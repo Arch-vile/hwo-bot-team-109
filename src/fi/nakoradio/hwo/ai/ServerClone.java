@@ -1,13 +1,12 @@
 package fi.nakoradio.hwo.ai;
 
-import org.jbox2d.common.Mat22;
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
 
 import fi.nakoradio.hwo.model.objects.Blueprint;
 import fi.nakoradio.hwo.physics.Constants;
-import fi.nakoradio.hwo.physics.DeathPointListener;
 import fi.nakoradio.hwo.physics.ObjectPath;
 import fi.nakoradio.hwo.physics.PhysicsWorld;
 import fi.nakoradio.hwo.physics.ServerCloneListener;
@@ -55,7 +54,10 @@ public class ServerClone {
 			this.simulation.getPhantom().setLinearVelocity(speed);
 		}
 		
+		//System.out.println(blueprint.getMyPaddle().getLowerLeftCornerPosition());
 		this.simulation.setObjectPositions(blueprint, updatePhantom);
+		//this.simulation.getMyPaddle().setTransform(new Vec2(0.0f,blueprint.getMyPaddle().getLowerLeftCornerPosition().y + blueprint.getMyPaddle().getHeight()/2),0);
+		//this.simulation.getMyPaddle().setTransform(new Vec2(0.0f,400),0);
 		
 		this.previousBluePrint = this.currentBlueprint;
 		this.currentBlueprint = blueprint;
@@ -72,6 +74,20 @@ public class ServerClone {
 		return speed;
 	}
 	
+	
+	/*public Vec2 calculateObjectSpeed(Body bodyFromCurrentBluePrint, Body bodyFromPreviousBluePrint){
+		Vec2 newPos = getCurrentBlueprint().getOpponentPaddle().getCenterPosition();
+		Vec2 refrencePos = getPreviousBluePrint().getOpponentPaddle().getCenterPosition();
+		Vec2 distance = newPos.sub(refrencePos);
+		long elapsedTime = getCurrentBlueprint().getTimestamp() - getPreviousBluePrint().getTimestamp();
+		float speedValue = 1000 * ( distance.length() / elapsedTime  );
+		distance.normalize();
+		Vec2 speed = distance.mul(speedValue * Constants.MYSTICAL_PADDLE_BOUNCE_SPEED_MODIFIER);
+		return speed;
+	}*/
+	
+	// TODO: do we really need to calculate ball speeed differently? It bounces and this could cause interesting speed vectors also
+	// we do require certain distance travelled to measure ball speed but is it necessary? propably not.
 	private Vec2 calculateBallSpeed(Blueprint blueprint, long tickCount) {
 		if(bounced(blueprint)) this.ballPath.clear();
 		

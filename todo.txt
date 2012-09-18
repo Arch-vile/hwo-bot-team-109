@@ -12,3 +12,9 @@
 - also be ready to handle messages that have somewhat unacceptable fields.. etc. coordinates with too many decimals -> substring them
 - FAQ: Miten liikkessä olevan mailan osuma palloon vaikuttaa pallon lentorataan?
 	Olisi aika tylsää paljastaa huipputieteellisen fysiikkamoottorin käyttämät yhtälöt, joten pidetään jännitystä yllä ja suositellaan empiiristä lähestymistapaa. 100% realistista tennisfysiikkaa lienee kuitenkin turha odottaa.
+	
+- jos tick aika on iso niin lähetetty mailan liikutusviesti voi liikuttaa mailaa hyvinkin paljon. eli ei saisi lähettää maksiminipeutta jos tick todellla iso. miten muuten vaikuttaa?
+- nyt serveri timestampit matchaa tick aikaan. mutta voisihan myös olla että tick aika ja sleep aika serverillä eivät olisi samat. eli 
+peli voisi pyöriä reaalimaailmaa nopeammin
+- kimmotukset mailan päädyllä tuntuvat toimivan täysin eri tavoin. eli servulla ilmeisesti ei voi mailan päädyllä kimmotta vaan se on aina suora pinta.
+	kimmotuksissa voisi simussa käyttää siis ehkäpä pidempää mailaa?

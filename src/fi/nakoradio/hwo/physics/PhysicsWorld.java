@@ -76,7 +76,7 @@ public class PhysicsWorld {
 		// TODO: we do not detect changes in static arena variables. etc width, height and radius
 		if(this.ball != null) this.ball.setTransform(blueprint.getBall().getPosition(),0);
 		if(updatePhantom && this.phantom != null && blueprint.getPhantom() != null) this.phantom.setTransform(blueprint.getPhantom().getPosition(),0);
-		if(this.myPaddle != null) this.myPaddle.setTransform(blueprint.getMyPaddle().getCenterPosition(), 0);
+		if(this.myPaddle != null) this.myPaddle.setTransform(blueprint.getMyPaddle().getCenterPosition(),0);
 		if(this.opponentPaddle != null) this.opponentPaddle.setTransform(blueprint.getOpponentPaddle().getCenterPosition(), 0);
 		
 	}
@@ -88,8 +88,8 @@ public class PhysicsWorld {
 		state.setBallY(getBall().getPosition().y);
 		state.setPhantomX(getPhantom().getPosition().x);
 		state.setPhantomY(getPhantom().getPosition().y);
-		state.setLeftPlayerY(getMyPaddle().getPosition().y);
-		state.setRightPlayerY(getOpponentPaddle().getPosition().y);
+		state.setLeftPlayerY(this.blueprint.getMyPaddle().toLowerLeftCornerPosition(getMyPaddle().getPosition()).y);
+		state.setRightPlayerY(this.blueprint.getOpponentPaddle().toLowerLeftCornerPosition(getOpponentPaddle().getPosition()).y);
 		
 		// static values
 		state.setConfBallRadius(getBlueprint().getBall().getRadius());
@@ -232,7 +232,7 @@ public class PhysicsWorld {
 		
 		//TODO: Should we have the friction and restitution here set similar to ball?
 		BodyDef def = new BodyDef();
-		def.position.set(paddle.getCenterPosition());
+		//def.position.set(paddle.getCenterPosition());
 		def.type = BodyType.KINEMATIC;
 		Body paddleToCreate = getPhysics().createBody(def);
 	    PolygonShape groundBox = new PolygonShape();

@@ -47,11 +47,11 @@ public class Blueprint {
 		this.phantom.setPosition(new Vec2(state.getPhantomX(), state.getPhantomY()));
 		this.phantom.setRadius(state.getConfBallRadius());
 		
-		this.myPaddle.setUpperLeftCornerPosition(new Vec2(0,state.getLeftPlayerY()));
+		this.myPaddle.setLowerLeftCornerPosition(new Vec2(0,state.getLeftPlayerY()));
 		this.myPaddle.setHeight(state.getConfPaddleHeight());
 		this.myPaddle.setWidth(state.getConfPaddleWidth());
 		
-		this.opponentPaddle.setUpperLeftCornerPosition(new Vec2(state.getConfMaxWidth()-state.getConfPaddleWidth(),state.getRightPlayerY()));
+		this.opponentPaddle.setLowerLeftCornerPosition(new Vec2(state.getConfMaxWidth()-state.getConfPaddleWidth(),state.getRightPlayerY()));
 		this.opponentPaddle.setHeight(state.getConfPaddleHeight());
 		this.opponentPaddle.setWidth(state.getConfPaddleWidth());
 		

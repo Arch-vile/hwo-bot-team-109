@@ -53,6 +53,8 @@ public class HWOBot {
 		// Wait for the first position message
 		while(messenger.peekLatestPositionMessage() == null) { try { Thread.sleep(10); } catch(Exception e){} }
 		System.out.println(messenger.peekLatestPositionMessage().getMessage());
+		messenger.sendPaddleMovementMessage(-1);
+		
 		
 		// Set up the initial situation
 		Blueprint blueprint = new Blueprint(messenger.popLatestPositionMessage().getStateInTime());
@@ -86,18 +88,17 @@ public class HWOBot {
 			
 			while(!messenger.getControlMessages().empty()){
 				InputMessage m = messenger.getControlMessages().pop();
+				System.out.println(m.getMessage());
 				if(m.isGameOverMessage()){
 					setPhantomToBall = true;
 					lastTimestamp = System.currentTimeMillis();
+					messenger.sendPaddleMovementMessage(-1);
 				}
 			}
 			
 			if(messenger.peekLatestPositionMessage() != null){
 				InputMessage positionMessage = messenger.popLatestPositionMessage();
 				blueprint = new Blueprint(positionMessage.getStateInTime());
-				
-			//	if(System.currentTimeMillis() - lastTimestamp > 1200)
-			//		setPhantomToBall = false;
 				
 				if(setPhantomToBall)
 					blueprint.getPhantom().setPosition(new Vec2(blueprint.getBall().getPosition().x, blueprint.getBall().getPosition().y+0));
