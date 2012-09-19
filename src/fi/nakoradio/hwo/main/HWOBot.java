@@ -37,7 +37,6 @@ public class HWOBot {
 		//DeathPointListener list = new DeathPointListener(((SimulatedMessenger)messenger).getSimulation(), "Simulation");
 		
 		
-		int playCount = 20;
 		boolean running = true;
 		
 		//GameVisualizer visualizer = new GameVisualizer();
@@ -58,8 +57,12 @@ public class HWOBot {
 		
 		// Set up the initial situation
 		Blueprint blueprint = new Blueprint(messenger.popLatestPositionMessage().getStateInTime());
-		//Nostradamus nostradamus = new Nostradamus(blueprint);
 		ServerClone serverClone = new ServerClone(blueprint);
+		Nostradamus nostradamus = new Nostradamus(serverClone);
+		
+		PaddleMover paddleMover = new PaddleMover(serverClone, messenger);
+		paddleMover.start();
+		
 		
 		//visualizer.update(blueprint);
 		visualizer2.update(blueprint);
@@ -88,11 +91,9 @@ public class HWOBot {
 			
 			while(!messenger.getControlMessages().empty()){
 				InputMessage m = messenger.getControlMessages().pop();
-				System.out.println(m.getMessage());
 				if(m.isGameOverMessage()){
 					setPhantomToBall = true;
 					lastTimestamp = System.currentTimeMillis();
-					messenger.sendPaddleMovementMessage(-1);
 				}
 			}
 			
@@ -104,6 +105,13 @@ public class HWOBot {
 					blueprint.getPhantom().setPosition(new Vec2(blueprint.getBall().getPosition().x, blueprint.getBall().getPosition().y+0));
 					
 				serverClone.update(blueprint, setPhantomToBall);
+			}
+			
+			
+			Vec2 deathPoint = nostradamus.getNextDeathPoint();
+			
+			if(deathPoint != null){
+				paddleMover.setTargets(deathPoint.y, 0);
 			}
 			
 			// TODO: do we do this even if the state is updated by message? try without

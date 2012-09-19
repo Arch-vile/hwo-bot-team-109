@@ -47,18 +47,13 @@ public class ServerClone {
 		long deltaOnServer = blueprint.getTimestamp() - getCurrentBlueprint().getTimestamp();
 		long tickCountOnServer = deltaOnServer / blueprint.getTickInterval(); // also try with -1, 
 		
-		Vec2 speed = calculateBallSpeed(blueprint, tickCountOnServer);
+		Vec2 speed = calculateBallSpeed();
 		
 		if(updatePhantom){
-			//System.out.println(speed);
 			this.simulation.getPhantom().setLinearVelocity(speed);
 		}
 		
-		//System.out.println(blueprint.getMyPaddle().getLowerLeftCornerPosition());
 		this.simulation.setObjectPositions(blueprint, updatePhantom);
-		//this.simulation.getMyPaddle().setTransform(new Vec2(0.0f,blueprint.getMyPaddle().getLowerLeftCornerPosition().y + blueprint.getMyPaddle().getHeight()/2),0);
-		//this.simulation.getMyPaddle().setTransform(new Vec2(0.0f,400),0);
-		
 		this.previousBluePrint = this.currentBlueprint;
 		this.currentBlueprint = blueprint;
 	}
@@ -88,11 +83,11 @@ public class ServerClone {
 	
 	// TODO: do we really need to calculate ball speeed differently? It bounces and this could cause interesting speed vectors also
 	// we do require certain distance travelled to measure ball speed but is it necessary? propably not.
-	private Vec2 calculateBallSpeed(Blueprint blueprint, long tickCount) {
-		if(bounced(blueprint)) this.ballPath.clear();
+	public Vec2 calculateBallSpeed() {
+		if(bounced(this.currentBlueprint)) this.ballPath.clear();
 		
-		Vec2 newPos = blueprint.getBall().getPosition();
-		this.ballPath.push(newPos, blueprint.getTimestamp()); // TODO: is this correct is the timestamp the time of the ball position capture or something else
+		Vec2 newPos = this.currentBlueprint.getBall().getPosition();
+		this.ballPath.push(newPos, this.currentBlueprint.getTimestamp()); // TODO: is this correct is the timestamp the time of the ball position capture or something else
 
 		if(this.ballPath.size() <= 1){
 			return new Vec2(0,0);
@@ -105,9 +100,8 @@ public class ServerClone {
 		}
 		
 		// speed / seconds
-		long elapsedTime = blueprint.getTimestamp() - this.ballPath.peekFirst().getTimestamp();
+		long elapsedTime = this.currentBlueprint.getTimestamp() - this.ballPath.peekFirst().getTimestamp();
 		float speedValue = 1000 * ( distance.length() / elapsedTime  );
-	//	System.out.println(speedValue);
 		distance.normalize();
 		Vec2 speed = distance.mul(speedValue);
 		
@@ -134,38 +128,6 @@ public class ServerClone {
 	
 	
 
-	public void update2(Blueprint blueprint){
-		boolean bounced = bounced(blueprint);
-		
-		if(!bounced){
-			// Lets handle the twitch in matrix i.e. lets adjust our speeds to better match server model
-			Vec2 lastUpdatePosition = this.simulation.getBlueprint().getBall().getPosition();
-			float simulatedDistance = this.simulation.getBall().getPosition().sub(lastUpdatePosition).length();
-			float actualDistance = blueprint.getBall().getPosition().sub(lastUpdatePosition).length();
-			
-			// TODO: is never decreased
-			// we are going too slow
-			if(simulatedDistance > BALL_MIN_DISTANCE_CALC && actualDistance > BALL_MIN_DISTANCE_CALC && simulatedDistance < actualDistance){
-				System.out.println("We are going too slow");
-				this.speedMultiplier += 0.01;
-				System.out.println("Decreased speed multiplier to: " + this.speedMultiplier);
-			}
-				
-			// we are going too fast
-			if(simulatedDistance > BALL_MIN_DISTANCE_CALC && actualDistance > BALL_MIN_DISTANCE_CALC && simulatedDistance > actualDistance){
-				System.out.println("We are going too fast");
-				this.speedMultiplier -= 0.01;
-				System.out.println("Decreased speed multiplier to: " + this.speedMultiplier);
-			}
-		}
-		
-		
-		this.simulation.setObjectPositions(blueprint, false);
-		
-		Vec2 speed = calculateBallSpeed(blueprint, bounced);
-		this.simulation.getBall().setLinearVelocity(speed);
-		
-	}
 	
 	
 	public void forwardToPresent(){
@@ -187,7 +149,7 @@ public class ServerClone {
 	
 
 	// If bounce happens zero speed is returned as it cannot be reliably calculated
-	private Vec2 calculateBallSpeed(Blueprint blueprint, boolean bounced) {
+	private Vec2 calculateBallSpeeddssdsddsdsd(Blueprint blueprint, boolean bounced) {
 		Vec2 currentPos = blueprint.getBall().getPosition();
 		
 		if(ballOrigin == null || bounced){

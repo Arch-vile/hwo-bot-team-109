@@ -7,20 +7,52 @@ import fi.nakoradio.hwo.integration.core.Messenger;
 
 public class PaddleMover implements Runnable {
 
-	// TODO: Note that the same messenger will be read from multiple threads... so atleast make sure you do not pop messages at wrong point
-	private Messenger messenger;
-	private Vec2 target;
 	private Thread thread;
 	private boolean running = false;
+	private float firstTarget;
+	private float secondTarget;
+	private ServerClone serverClone;
+	private Messenger messenger;
 	
-	public PaddleMover(Messenger messenger) {
+	private float throttle;
+	
+	public PaddleMover(ServerClone serverClone, Messenger messenger) {
+		this.serverClone = serverClone;
 		this.messenger = messenger;
 	}
 
-	public void move(Vec2 firstPoint) {
-		this.target = firstPoint;
+	
+	public void setTargets(float firstTarget, float secondTarget){
+		this.firstTarget = firstTarget;
+		this.secondTarget = secondTarget;
 	}
 	
+	private void act(){
+		
+		float optimizedTarget = calculateOptimizedTarget();
+
+		float newThrottle = 0;
+		if(Math.abs(serverClone.getSimulation().getMyPaddle().getPosition().y - optimizedTarget) < 4 )
+			newThrottle = 0;
+		else if(serverClone.getSimulation().getMyPaddle().getPosition().y > optimizedTarget){
+			newThrottle = -1;
+		}else
+			newThrottle = 1;
+		
+		if(newThrottle != this.throttle){
+			messenger.sendPaddleMovementMessage(newThrottle);
+		}
+		
+	}
+	
+	
+	
+	// TODO
+	private float calculateOptimizedTarget() {
+		return firstTarget;
+	}
+
+
 	public void start() {
 		this.thread = new Thread(this);
 		this.thread.start();
@@ -35,39 +67,15 @@ public class PaddleMover implements Runnable {
 		this.running = true;
 		
 		try{
-			
 			while(!Thread.interrupted() && this.running){
-			
-				
-				Thread.sleep(20); 
-				
-				
-				
-				
-				if(!messenger.getPositionMessages().empty()){
-					
-					InputMessage positionMessage = messenger.getPositionMessages().peek();
-					Vec2 distanceToTarget = distanceToTarget(positionMessage);
-					
-					
-					
-				}
-				
-					
-				
-				
+				Thread.sleep(5); 
+				act();
 			}
 			
 		}catch(Exception e){
 			System.err.println("PaddleMover thread exception: " + e);
 		}
 		
-	}
-
-	// Returns zero if any part of the paddle is on target
-	private Vec2 distanceToTarget(InputMessage positionMessage) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	

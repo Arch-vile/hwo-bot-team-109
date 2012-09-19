@@ -11,6 +11,8 @@ public class SocketMessenger  implements Messenger {
 	private InputMessage latestPositionMessage;
 	private BotSocket socket;
 	
+	private long lastMoveMessageTimestamp;
+	
 	public SocketMessenger(String host, int port){
 		this.socket = new BotSocket(host, port);
 		this.controlMessages = new SizedStack<InputMessage>(50);
@@ -70,8 +72,17 @@ public class SocketMessenger  implements Messenger {
 	}
 
 	@Override
+	// TODO: we need something much more clever both here and in the caller
 	public void sendPaddleMovementMessage(float paddleDirection) {
-		socket.getOut().println("{\"msgType\":\"changeDir\",\"data\":"+paddleDirection+"}");
+		
+		if(System.currentTimeMillis() - lastMoveMessageTimestamp > 100){
+			String message = "{\"msgType\":\"changeDir\",\"data\":"+paddleDirection+"}";
+			socket.getOut().println(message);
+			System.out.println(message);
+			lastMoveMessageTimestamp = System.currentTimeMillis();
+		}
+		
+		
 		
 	}
 

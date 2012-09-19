@@ -12,62 +12,38 @@ public class Nostradamus {
 
 	DeathPointListener collisions;
 	PhysicsWorld world;
+	private ServerClone serverClone;
 	
-	public Nostradamus(Blueprint blueprint) {
+	public Nostradamus(ServerClone serverClone) {
+		this.serverClone = serverClone;
 		boolean forNostradamus = true;
-		this.world = new PhysicsWorld(new World(new Vec2(0,0),true), blueprint, forNostradamus);
+		// TODO: we should have a world that simulates bounces from paddles instead of plain walls
+		this.world = new PhysicsWorld(new World(new Vec2(0,0),true), serverClone.getCurrentBlueprint(), forNostradamus);
 		this.collisions = new DeathPointListener(world,"Nostradamus");
 	}
 	
-	public void update(Blueprint blueprint){
-		this.world.setObjectPositions(blueprint,false);
-		
-		if("d".length() < 2){
-			//this.world.setBallSpeed(blueprint.getBall().getSpeed());
-			System.err.println("todo in Nostradamus");
-			System.exit(1);
-		}
-		collisions.popDeathPoint();
-	}
-	
-	
-
 	public Vec2 getNextDeathPoint(){
-		
-		//GameVisualizer vis = new GameVisualizer();
-		//vis.start();
-		//vis.update(world.getBlueprint());
-		
-		//try { Thread.sleep(100000); } catch(Exception e){}
+		System.out.println("getNextDeathPoint is:");
+		this.world.setObjectPositions(this.serverClone.getCurrentBlueprint(), true);
 		
 		collisions.popDeathPoint();
-		boolean ballIsMoving = (this.world.getBall().getLinearVelocity().length() != 0);
-		if(!ballIsMoving){
+		Vec2 ballSpeed = this.serverClone.calculateBallSpeed();
+		if(ballSpeed.length() == 0){
 			System.err.println("Ball is not moving. Will skip getting next death point.");
 		}
+		this.world.getBall().setLinearVelocity(ballSpeed);
 		
-		while(ballIsMoving && collisions.getDeathPoint() == null){
+		// TODO!!!!: how in earth are we going to simulate the mystic paddle bounces in our simulation? hmmm... but it should work through listener yes?
+		// so add it to this model also
+		while(ballSpeed.length() != 0 && collisions.getDeathPoint() == null){
 			world.getPhysics().step(1f/60f, 10, 8);
-			//try { Thread.sleep(1000/60); }catch(Exception e){ }
-			//vis.update(world.getCurrentState());
-			
-			//System.out.println(world.getBall().getPosition());
-				
 		}
-		
+			
 		Vec2 deathPoint = collisions.popDeathPoint();
+		System.out.println("getNextDeathPoint: " + deathPoint);
 		return deathPoint;
 	}
 	
-	public PhysicsWorld getWorld(){
-		return world;
-	}
-
-	public void forward(long milliseconds) {
-		int iterations = (int)(milliseconds / ((1f/60f)*1000));
-		for(int i = 0; i < iterations; i++){
-			world.getPhysics().step(1f/60f, 10, 8);
-		}
-	}
 	
 }
+ 
