@@ -38,6 +38,7 @@ public class SocketMessenger  implements Messenger {
 					if(message.isGameIsOnMessage()){ 
 						positionMessages.push(message);
 						this.latestPositionMessage = message;
+						System.out.println("Difference: " + (System.currentTimeMillis() - message.getTime()));
 					}
 					
 				}catch(BadInputMessageException e){

@@ -50,6 +50,7 @@ public class HWOBot {
 		
 		System.out.println("Waiting first position message");
 		// Wait for the first position message
+		// TODO: should propably be done inside the loop to make sure we start immediately in correct sync with the server
 		while(messenger.peekLatestPositionMessage() == null) { try { Thread.sleep(10); } catch(Exception e){} }
 		System.out.println(messenger.peekLatestPositionMessage().getMessage());
 		messenger.sendPaddleMovementMessage(-1);
@@ -61,7 +62,7 @@ public class HWOBot {
 		Nostradamus nostradamus = new Nostradamus(serverClone);
 		
 		PaddleMover paddleMover = new PaddleMover(serverClone, messenger);
-		paddleMover.start();
+		//paddleMover.start();
 		
 		
 		//visualizer.update(blueprint);
@@ -70,14 +71,15 @@ public class HWOBot {
 		long lastTimestamp = System.currentTimeMillis();
 		int counter = 0;
 		
+		
 		float t = 0;
-		float dt = 1f / 60f;
+		
 		float tickInterval = ((float)blueprint.getTickInterval())/1000f;
 		System.out.println("Starting main loop");
 		boolean setPhantomToBall = true;
 		while(running){
 			
-			try { Thread.sleep(blueprint.getTickInterval()); } catch(Exception e){ System.err.println("Error in main program sleep");}
+			try { Thread.sleep(50); } catch(Exception e){ System.err.println("Error in main program sleep");}
 			
 			
 			if(serverClone.getSimulation().getBall().getPosition().x > 600){
@@ -97,7 +99,7 @@ public class HWOBot {
 				}
 			}
 			
-			if(messenger.peekLatestPositionMessage() != null){
+			while(messenger.peekLatestPositionMessage() != null){
 				InputMessage positionMessage = messenger.popLatestPositionMessage();
 				blueprint = new Blueprint(positionMessage.getStateInTime());
 				
@@ -108,22 +110,16 @@ public class HWOBot {
 			}
 			
 			
-			Vec2 deathPoint = nostradamus.getNextDeathPoint();
+			/*Vec2 deathPoint = nostradamus.getNextDeathPoint();
 			
 			if(deathPoint != null){
 				paddleMover.setTargets(deathPoint.y, 0);
-			}
+			}*/
 			
 			// TODO: do we do this even if the state is updated by message? try without
 			//serverClone.forward(blueprint.getTickInterval());
-			if(setPhantomToBall == false){
-				while(t < tickInterval - 0.02){
-					serverClone.getSimulation().getPhysics().step(dt, 10, 8);
-					t += dt;
-				}
-				t = (tickInterval - ( t - dt ))*-1;
-			}
 			
+			serverClone.advanceToPresentTime();
 			visualizer2.update(serverClone.getSimulation().getCurrentState());
 			
 		}

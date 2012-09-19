@@ -29,12 +29,16 @@ public class ServerClone {
 	private Blueprint currentBlueprint;
 	private Blueprint previousBluePrint;
 	
+	private long currentTime;
+	private float sumdtRemainder;
+	
 	public ServerClone(Blueprint blueprint) {
 		World world = new World(new Vec2(0,0),true);
 		this.simulation = new PhysicsWorld(world, blueprint);
-		world.setContactListener(new ServerCloneListener(this));
+		//world.setContactListener(new ServerCloneListener(this));
 		this.ballPath = new ObjectPath();
-		this.currentBlueprint = blueprint;
+		this.update(blueprint, false);
+		
 	}
 	
 	public float getSpeedMultiplier(){
@@ -44,18 +48,18 @@ public class ServerClone {
 	public void update(Blueprint blueprint, boolean updatePhantom){
 		
 		
-		long deltaOnServer = blueprint.getTimestamp() - getCurrentBlueprint().getTimestamp();
-		long tickCountOnServer = deltaOnServer / blueprint.getTickInterval(); // also try with -1, 
+		if(this.previousBluePrint != null){
+			Vec2 speed = calculateBallSpeed();
 		
-		Vec2 speed = calculateBallSpeed();
-		
-		if(updatePhantom){
-			this.simulation.getPhantom().setLinearVelocity(speed);
+			if(updatePhantom){
+				this.simulation.getPhantom().setLinearVelocity(speed);
+			}
 		}
 		
 		this.simulation.setObjectPositions(blueprint, updatePhantom);
 		this.previousBluePrint = this.currentBlueprint;
 		this.currentBlueprint = blueprint;
+		this.currentTime = this.currentBlueprint.getTimestamp();
 	}
 	
 	public Vec2 getOpponentPaddleSpeed(){
@@ -246,6 +250,26 @@ public class ServerClone {
 
 	public Blueprint getPreviousBluePrint() {
 		return previousBluePrint;
+	}
+
+	public void advanceToPresentTime() {
+		
+		System.out.println("Advance to present time by forwarding " + (System.currentTimeMillis()-this.currentTime) + " ms ");
+		long startTime = this.currentTime;
+		float sumdt = this.sumdtRemainder; // What was left over from last run
+		long runTime = (long)sumdt;
+		
+		float dt = 1f / 160f;
+		while(startTime + runTime <= System.currentTimeMillis()){
+			getSimulation().getPhysics().step(dt, 10, 8);
+			sumdt += dt;
+			runTime = (long)(sumdt*1000);
+		}
+		this.sumdtRemainder = (sumdt*1000 - runTime) / 1000f;
+		this.currentTime = startTime + runTime;
+		
+		System.out.println("Advance to present time - DONE");
+		
 	}
 
 	
