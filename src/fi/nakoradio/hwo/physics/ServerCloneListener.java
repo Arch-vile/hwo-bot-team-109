@@ -17,7 +17,7 @@ public class ServerCloneListener implements ContactListener {
 
 	@Override
 	public void beginContact(Contact contact) {
-		
+		System.out.println("Contact " + this.getClass().getName());
 		
 		if(		(contact.getFixtureA().getBody() == serverClone.getSimulation().getOpponentPaddle() || contact.getFixtureB().getBody() == serverClone.getSimulation().getOpponentPaddle() ) &&
 				(contact.getFixtureA().getBody() == serverClone.getSimulation().getPhantom() || contact.getFixtureB().getBody() == serverClone.getSimulation().getPhantom() )){

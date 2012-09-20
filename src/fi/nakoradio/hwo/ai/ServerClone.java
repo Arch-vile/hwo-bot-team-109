@@ -52,7 +52,7 @@ public class ServerClone {
 			Vec2 speed = calculateBallSpeed();
 		
 			if(updatePhantom){
-				System.out.println(speed);
+				System.out.println("Setting velocity");
 				this.simulation.getPhantom().setLinearVelocity(speed);
 			}
 		}
@@ -253,7 +253,7 @@ public class ServerClone {
 		return previousBluePrint;
 	}
 
-/*	public void advanceToPresentTime() {
+	/*public void advanceToPresentTime() {
 		
 		System.out.println("Advance to present time by forwarding " + (System.currentTimeMillis()-this.actualTime) + " ms ");
 		long startTime = this.actualTime;

@@ -22,6 +22,9 @@ public class DeathPointListener implements ContactListener {
 	
 	@Override
 	public void beginContact(Contact contact) {
+
+		System.out.println("Contact " + this.getClass().getName());
+		
 		
 		if(		(contact.getFixtureA().getBody() == world.getMyDeathLine() || contact.getFixtureB().getBody() == world.getMyDeathLine() ) &&
 				(contact.getFixtureA().getBody() == world.getBall() || contact.getFixtureB().getBody() == world.getBall() )){

@@ -40,11 +40,8 @@ public class ServerCloneSynchronizer implements Runnable {
 		try{
 			// We want this to match the actual tick event on the server. i.e the ticks will happen at same time local and server
 			while(!Thread.interrupted() && this.running){
-				
 				long sleepTillNextTick = getNextTickStart() - System.currentTimeMillis();
-				//System.out.println("sleep: " + sleepTillNextTick);
 				Thread.sleep(sleepTillNextTick); 
-
 				act();
 			}
 			
@@ -68,14 +65,18 @@ public class ServerCloneSynchronizer implements Runnable {
 	}
 	
 	private void act() throws InterruptedException {
+//		System.out.print("Simulating...");
+		
 		// TODO: maybe to do this nicer?
 		while(batchUpdating) Thread.sleep(1); 
 		forwardByTick();
+		
+	//	System.out.println("DONE");
 	}
 	
 	private void forwardByTick() {
 		int dtDivider = (int)(((float)this.clone.getCurrentBlueprint().getTickInterval()) / (1f/60f*1000f)+1); 
-		float dt = ((float)this.clone.getCurrentBlueprint().getTickInterval()) / dtDivider;
+		float dt = ((float)this.clone.getCurrentBlueprint().getTickInterval()) / dtDivider / 1000f;
 
 		for(int i = 0; i < dtDivider; i++){
 			this.clone.getSimulation().getPhysics().step(dt, 10, 8);

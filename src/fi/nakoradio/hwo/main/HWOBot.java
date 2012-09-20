@@ -60,7 +60,7 @@ public class HWOBot {
 		// Set up the initial situation
 		Blueprint blueprint = new Blueprint(messenger.popLatestPositionMessage().getStateInTime());
 		ServerClone serverClone = new ServerClone(blueprint);
-		Nostradamus nostradamus = new Nostradamus(serverClone);
+		//Nostradamus nostradamus = new Nostradamus(serverClone);
 		ServerCloneSynchronizer synchronizer = new ServerCloneSynchronizer(serverClone);
 		
 		
@@ -75,44 +75,39 @@ public class HWOBot {
 		
 		
 		float t = 0;
-		
+		boolean updateStateFromServer = true;
 		float tickInterval = ((float)blueprint.getTickInterval())/1000f;
 		System.out.println("Starting main loop");
-		boolean setPhantomToBall = true;
+		
+		synchronizer.start();
 		while(running){
-		//	if(!synchronizer.running ) synchronizer.start();
 			
 			try { Thread.sleep(10); } catch(Exception e){ System.err.println("Error in main program sleep");}
 			
-			
-			if(serverClone.getSimulation().getBall().getPosition().x > 300){
-				setPhantomToBall = false;
+			if(System.currentTimeMillis() - lastTimestamp > 1500){
+				updateStateFromServer = false;
+				lastTimestamp = System.currentTimeMillis();
 			}
-			
-			if(serverClone.getSimulation().getBall().getPosition().x < 50){
-				setPhantomToBall = true;
-			}
-			
 			
 			while(!messenger.getControlMessages().empty()){
 				InputMessage m = messenger.getControlMessages().pop();
 				if(m.isGameOverMessage()){
-					setPhantomToBall = true;
+					updateStateFromServer = true;
 					lastTimestamp = System.currentTimeMillis();
 				}
 			}
 			
-			while(messenger.peekLatestPositionMessage() != null){
+			while(updateStateFromServer && messenger.peekLatestPositionMessage() != null){
+				System.out.println("Prosessing position update message from server");
 				InputMessage positionMessage = messenger.popLatestPositionMessage();
 				blueprint = new Blueprint(positionMessage.getStateInTime());
 				
-				if(setPhantomToBall)
-					blueprint.getPhantom().setPosition(new Vec2(blueprint.getBall().getPosition().x, blueprint.getBall().getPosition().y+0));
-					
-				serverClone.update(blueprint, setPhantomToBall);
-				//synchronizer.serverCloneUpdated();
+				blueprint.getPhantom().setPosition(new Vec2(blueprint.getBall().getPosition().x, blueprint.getBall().getPosition().y+0));
+				serverClone.update(blueprint, true);
+				synchronizer.serverCloneUpdated();
 			}
 			
+			//System.out.println(serverClone.getSimulation().getPhantom().getLinearVelocity());
 			
 			/*Vec2 deathPoint = nostradamus.getNextDeathPoint();
 			
