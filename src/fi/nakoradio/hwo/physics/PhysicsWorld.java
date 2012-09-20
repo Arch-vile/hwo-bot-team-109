@@ -23,7 +23,7 @@ public class PhysicsWorld {
 	public static int CATEGORY_SENSORS = 	0x0002;
 	public static int CATEGORY_BALL = 		0x0004;
 	public static int CATEGORY_PADDLE = 	0x0008;
-	
+	public static int CATEGORY_MARKER = 	0x0016;
 	
 	World world;
 	Body arena;
@@ -33,6 +33,8 @@ public class PhysicsWorld {
 	Body opponentPaddle;
 	Body myDeathLine;
 	Body opponentDeathLine;
+	Body marker1;
+	Body marker2;
 	
 	Fixture myEnd;
 	
@@ -60,6 +62,8 @@ public class PhysicsWorld {
 		createWalls(blueprint.getArena());
 		createBall(blueprint.getBall());
 		createPhantom(blueprint.getBall());
+		marker1 = createMarker(2,2);
+		marker2 = createMarker(6,6);
 		this.myPaddle = createPaddle(blueprint.getMyPaddle());
 		this.opponentPaddle = createPaddle(blueprint.getMyPaddle());
 		
@@ -250,7 +254,35 @@ public class PhysicsWorld {
 	    return paddleToCreate;
 	}
 
+	private Body createMarker(int width, int height) {
+		BodyDef def = new BodyDef();
+		def.type = BodyType.STATIC;
+		Body marker = getPhysics().createBody(def);
+	    PolygonShape groundBox = new PolygonShape();
+	    groundBox.setAsBox(width,height);
+	    
+	    FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = groundBox;
+		fixtureDef.density = 0f;
+		fixtureDef.friction = 0f;
+		fixtureDef.restitution = 0f;
+		fixtureDef.filter.categoryBits = CATEGORY_MARKER;
+		fixtureDef.filter.maskBits = 0;
+	
+		marker.setTransform(new Vec2(this.blueprint.getArena().getWidth()/2, this.blueprint.getArena().getHeight()/2),0);
+		marker.createFixture(fixtureDef);
+		return marker;
+	}
 
+	
+	public Body getMarker1(){
+		return this.marker1;
+	}
+	
+	public Body getMarker2(){
+		return this.marker2;
+	}
+	
 	public World getPhysics() {
 		return world;
 	}

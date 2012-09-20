@@ -52,6 +52,7 @@ public class ServerCloneSynchronizer implements Runnable {
 	}
 	
 	public void serverCloneUpdated() {
+		System.out.println("Rolling server clone to current time after model update");
 		this.batchUpdating = true;
 		
 		long forwardedTo = this.clone.getCurrentBlueprint().getTimestamp();
@@ -62,6 +63,7 @@ public class ServerCloneSynchronizer implements Runnable {
 		}
 		
 		this.batchUpdating = false;
+		System.out.println("Server clone back in real time");
 	}
 	
 	private void act() throws InterruptedException {

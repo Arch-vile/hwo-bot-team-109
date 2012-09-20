@@ -30,7 +30,7 @@ public class DeathPointListener implements ContactListener {
 				(contact.getFixtureA().getBody() == world.getBall() || contact.getFixtureB().getBody() == world.getBall() )){
 			// TODO: Other cases where we should copy instead of reference? Here the balls vector is changing so the deathPoint keeps changing also
 			this.deathPoint = new Vec2(world.getBall().getPosition());
-			//System.out.println("["+ id + "] DEATH AT: " + deathPoint);
+			System.out.println("DEATH AT: " + deathPoint);
 		}
 		
 	}

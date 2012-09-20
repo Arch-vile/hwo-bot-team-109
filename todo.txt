@@ -38,3 +38,5 @@ Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Array index
 	at fi.nakoradio.hwo.physics.PhysicsWorld.setObjectPositions(PhysicsWorld.java:77)
 	at fi.nakoradio.hwo.physics.visualization.GameVisualizer.update(GameVisualizer.java:32)
 	at fi.nakoradio.hwo.main.HWOBot.main(HWOBot.java:71)
+	
+- !!! there is something happening on each bounce... some twitch.. death points change for brief while and then return back

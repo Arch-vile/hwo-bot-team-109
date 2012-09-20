@@ -46,18 +46,16 @@ public class ServerClone {
 	}
 	
 	public void update(Blueprint blueprint, boolean updatePhantom){
-		
-		
 		if(this.previousBluePrint != null){
 			Vec2 speed = calculateBallSpeed();
-		
+			this.simulation.getBall().setLinearVelocity(speed);
 			if(updatePhantom){
-				System.out.println("Setting velocity");
 				this.simulation.getPhantom().setLinearVelocity(speed);
 			}
 		}
 		
 		this.simulation.setObjectPositions(blueprint, updatePhantom);
+		
 		this.previousBluePrint = this.currentBlueprint;
 		this.currentBlueprint = blueprint;
 		this.actualTime = this.currentBlueprint.getTimestamp();
@@ -88,6 +86,7 @@ public class ServerClone {
 	
 	// TODO: do we really need to calculate ball speeed differently? It bounces and this could cause interesting speed vectors also
 	// we do require certain distance travelled to measure ball speed but is it necessary? propably not.
+	// NOTE: It is dangarous to use the actual speed of the Body object. As it hits the wall the speed vector could have x velocity of 0
 	public Vec2 calculateBallSpeed() {
 		if(bounced(this.currentBlueprint)) this.ballPath.clear();
 		
