@@ -29,7 +29,7 @@ public class ServerClone {
 	private Blueprint currentBlueprint;
 	private Blueprint previousBluePrint;
 	
-	private long currentTime;
+	private long actualTime;
 	private float sumdtRemainder;
 	
 	public ServerClone(Blueprint blueprint) {
@@ -52,6 +52,7 @@ public class ServerClone {
 			Vec2 speed = calculateBallSpeed();
 		
 			if(updatePhantom){
+				System.out.println(speed);
 				this.simulation.getPhantom().setLinearVelocity(speed);
 			}
 		}
@@ -59,7 +60,7 @@ public class ServerClone {
 		this.simulation.setObjectPositions(blueprint, updatePhantom);
 		this.previousBluePrint = this.currentBlueprint;
 		this.currentBlueprint = blueprint;
-		this.currentTime = this.currentBlueprint.getTimestamp();
+		this.actualTime = this.currentBlueprint.getTimestamp();
 	}
 	
 	public Vec2 getOpponentPaddleSpeed(){
@@ -252,10 +253,10 @@ public class ServerClone {
 		return previousBluePrint;
 	}
 
-	public void advanceToPresentTime() {
+/*	public void advanceToPresentTime() {
 		
-		System.out.println("Advance to present time by forwarding " + (System.currentTimeMillis()-this.currentTime) + " ms ");
-		long startTime = this.currentTime;
+		System.out.println("Advance to present time by forwarding " + (System.currentTimeMillis()-this.actualTime) + " ms ");
+		long startTime = this.actualTime;
 		float sumdt = this.sumdtRemainder; // What was left over from last run
 		long runTime = (long)sumdt;
 		
@@ -266,11 +267,11 @@ public class ServerClone {
 			runTime = (long)(sumdt*1000);
 		}
 		this.sumdtRemainder = (sumdt*1000 - runTime) / 1000f;
-		this.currentTime = startTime + runTime;
+		this.actualTime = startTime + runTime;
 		
 		System.out.println("Advance to present time - DONE");
 		
-	}
+	}*/
 
 	
 

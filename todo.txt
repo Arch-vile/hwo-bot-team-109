@@ -21,4 +21,9 @@ peli voisi pyöriä reaalimaailmaa nopeammin
 - tee koodista botti, jotta voit laittaa kaksi bottia pelaamaan keskenään
 - miten pitäisi varautua siihen että lapa kimpoaa laidoista
 - !!!! NTP asetus koneelle - miten image?
-- 
+- !!!missä tilanteissa viestejä lähtisi yli 10 sekunnissa. millä ympäristö arvoilla. miten reagoida tilanteeseen?
+- mitä jos palvelin ei ajakaan reaaliajassa?
+- !!!etsi kaikki system.exit koodista
+- !!!!!!!! varmista mitä tarkoitettaan viestien määrän juoksevalla rajalla
+- !!!!!!! pitäisi tosiaan skaalata... pitäisi olla 1-10 kokoluokkaa
+- !!! miten varmistaa että ei ole kokoaja yhtä tikkiä edessä/jäljessä. loogisesti vaikea päätellä.

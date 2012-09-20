@@ -9,6 +9,7 @@ import org.jbox2d.dynamics.World;
 import fi.nakoradio.hwo.ai.Nostradamus;
 import fi.nakoradio.hwo.ai.PaddleMover;
 import fi.nakoradio.hwo.ai.ServerClone;
+import fi.nakoradio.hwo.ai.ServerCloneSynchronizer;
 import fi.nakoradio.hwo.integration.core.BadInputMessageException;
 import fi.nakoradio.hwo.integration.core.BotSocket;
 import fi.nakoradio.hwo.integration.core.InputMessage;
@@ -60,8 +61,9 @@ public class HWOBot {
 		Blueprint blueprint = new Blueprint(messenger.popLatestPositionMessage().getStateInTime());
 		ServerClone serverClone = new ServerClone(blueprint);
 		Nostradamus nostradamus = new Nostradamus(serverClone);
+		ServerCloneSynchronizer synchronizer = new ServerCloneSynchronizer(serverClone);
 		
-		PaddleMover paddleMover = new PaddleMover(serverClone, messenger);
+		
 		//paddleMover.start();
 		
 		
@@ -78,11 +80,12 @@ public class HWOBot {
 		System.out.println("Starting main loop");
 		boolean setPhantomToBall = true;
 		while(running){
+		//	if(!synchronizer.running ) synchronizer.start();
 			
-			try { Thread.sleep(50); } catch(Exception e){ System.err.println("Error in main program sleep");}
+			try { Thread.sleep(10); } catch(Exception e){ System.err.println("Error in main program sleep");}
 			
 			
-			if(serverClone.getSimulation().getBall().getPosition().x > 600){
+			if(serverClone.getSimulation().getBall().getPosition().x > 300){
 				setPhantomToBall = false;
 			}
 			
@@ -107,6 +110,7 @@ public class HWOBot {
 					blueprint.getPhantom().setPosition(new Vec2(blueprint.getBall().getPosition().x, blueprint.getBall().getPosition().y+0));
 					
 				serverClone.update(blueprint, setPhantomToBall);
+				//synchronizer.serverCloneUpdated();
 			}
 			
 			
@@ -119,7 +123,7 @@ public class HWOBot {
 			// TODO: do we do this even if the state is updated by message? try without
 			//serverClone.forward(blueprint.getTickInterval());
 			
-			serverClone.advanceToPresentTime();
+			//serverClone.advanceToPresentTime();
 			visualizer2.update(serverClone.getSimulation().getCurrentState());
 			
 		}

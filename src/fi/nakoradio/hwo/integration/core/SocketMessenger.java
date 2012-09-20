@@ -1,7 +1,9 @@
 package fi.nakoradio.hwo.integration.core;
 
 import java.io.BufferedReader;
+import java.util.Vector;
 
+import fi.nakoradio.hwo.physics.Constants;
 import fi.nakoradio.hwo.util.SizedStack;
 
 public class SocketMessenger  implements Messenger {
@@ -13,10 +15,17 @@ public class SocketMessenger  implements Messenger {
 	
 	private long lastMoveMessageTimestamp;
 	
+	private Vector<Long> outputMessageTimestamps;
+	
+	public SocketMessenger(){
+		this.outputMessageTimestamps = new Vector<Long>();
+	}
+	
 	public SocketMessenger(String host, int port){
 		this.socket = new BotSocket(host, port);
 		this.controlMessages = new SizedStack<InputMessage>(50);
 		this.positionMessages = new SizedStack<InputMessage>(50);
+		this.outputMessageTimestamps = new Vector<Long>();
 	}
 	
 	@Override
@@ -38,7 +47,7 @@ public class SocketMessenger  implements Messenger {
 					if(message.isGameIsOnMessage()){ 
 						positionMessages.push(message);
 						this.latestPositionMessage = message;
-						System.out.println("Difference: " + (System.currentTimeMillis() - message.getTime()));
+						//System.out.println("Difference: " + (System.currentTimeMillis() - message.getTime()));
 					}
 					
 				}catch(BadInputMessageException e){
@@ -73,21 +82,39 @@ public class SocketMessenger  implements Messenger {
 	}
 
 	@Override
-	// TODO: we need something much more clever both here and in the caller
 	public void sendPaddleMovementMessage(float paddleDirection) {
 		
-		if(System.currentTimeMillis() - lastMoveMessageTimestamp > 100){
-			String message = "{\"msgType\":\"changeDir\",\"data\":"+paddleDirection+"}";
-			socket.getOut().println(message);
-			System.out.println(message);
-			lastMoveMessageTimestamp = System.currentTimeMillis();
+		// TODO: how to recover nicely
+		if(recordMessageAndCheckExceed()){
+			return;
 		}
+		
+		
 		
 		
 		
 	}
 
 	
+	private boolean recordMessageAndCheckExceed() {
+		
+		long currentTimestamp = System.currentTimeMillis();
+		this.outputMessageTimestamps.add(currentTimestamp);
+		
+		if(this.outputMessageTimestamps.size() >= Constants.OUTPUT_MESSAGE_COUNT_LIMIT+1){ // you can send the max. so use +1 here
+			long oldestTimestamp = this.outputMessageTimestamps.get(0);
+			if(currentTimestamp - oldestTimestamp < (Constants.OUTPUT_MESSAGE_SPEED_LIMIT + Constants.OUTPUT_MESSAGE_SPEED_SAFE_FACTOR * Constants.OUTPUT_MESSAGE_COUNT_LIMIT) ){
+				System.err.println("Exceeded the output message limit");
+				System.exit(1);
+				// return true;
+			}
+			this.outputMessageTimestamps.remove(0);
+			
+		}
+	
+		return false;
+	}
+
 	@Override
 	public InputMessage peekLatestPositionMessage() {
 		return this.latestPositionMessage;
@@ -99,6 +126,25 @@ public class SocketMessenger  implements Messenger {
 		InputMessage toReturn = this.latestPositionMessage;
 		this.latestPositionMessage = null;
 		return toReturn;
+	}
+	
+	
+	public static void main(String[] args){
+		
+		float a = ((float)((int)1)) / ((int)60);
+		System.out.println(a);
+		
+		
+		SocketMessenger m = new SocketMessenger();
+		
+		
+		for(int i = 0; i < 36; i++){
+			
+			m.recordMessageAndCheckExceed();
+			try{ Thread.sleep(109); } catch(Exception e){ }
+			
+		}
+		
 	}
 	
 	
