@@ -40,14 +40,14 @@ public class HWOBot {
 		
 		boolean running = true;
 		
-		GameVisualizer visualizer = new GameVisualizer();
-		visualizer.start();
+		//GameVisualizer visualizer = new GameVisualizer();
+		//visualizer.start();
 		//GameVisualizer visualizer2 = new GameVisualizer();
 		//visualizer2.start();
 		try { Thread.sleep(500); } catch(Exception e){}
 		
 		messenger.sendJoinMessage(botname);
-		//PaddleMover paddleMover = new PaddleMover(messenger);
+		
 		
 		System.out.println("Waiting first position message");
 		// Wait for the first position message
@@ -65,10 +65,11 @@ public class HWOBot {
 		
 		//nostradamus.tempvisu = visualizer2;
 		
-		//paddleMover.start();
+		PaddleMover paddleMover = new PaddleMover(serverClone, messenger);
+		paddleMover.start();
 		
 		
-		visualizer.update(blueprint);
+		//visualizer.update(blueprint);
 	//	visualizer2.update(blueprint);
 		
 		long lastTimestamp = System.currentTimeMillis();
@@ -84,25 +85,27 @@ public class HWOBot {
 		while(running){
 			
 			try { Thread.sleep(10); } catch(Exception e){ System.err.println("Error in main program sleep");}
-			System.out.println("Running main loop...");
+			//System.out.println("Running main loop...");
 			
-			if(System.currentTimeMillis() - lastTimestamp > 1500){
+			/*if(System.currentTimeMillis() - lastTimestamp > 1500){
 				updateStateFromServer = false;
 				lastTimestamp = System.currentTimeMillis();
-			}
+			}*/
 			
-			System.out.println("Check control messages");
+			//System.out.println("Check control messages");
 			while(!messenger.getControlMessages().empty()){
 				InputMessage m = messenger.getControlMessages().pop();
+				System.out.println(m.getMessage());
 				if(m.isGameOverMessage()){
 					updateStateFromServer = true;
 					lastTimestamp = System.currentTimeMillis();
 				}
 			}
 			
-			System.out.println("Check status messages");
+			//System.out.println("Check status messages");
 			while(updateStateFromServer && messenger.peekLatestPositionMessage() != null){
 				InputMessage positionMessage = messenger.popLatestPositionMessage();
+				//System.out.println(positionMessage.getMessage());
 				blueprint = new Blueprint(positionMessage.getStateInTime());
 				
 				blueprint.getPhantom().setPosition(new Vec2(blueprint.getBall().getPosition().x, blueprint.getBall().getPosition().y+0));
@@ -112,25 +115,25 @@ public class HWOBot {
 			
 			//System.out.println(serverClone.getSimulation().getPhantom().getLinearVelocity());
 			
-			System.out.println("Getting next death point...");
+			//System.out.println("Getting next death point...");
 			Vec2[] deathPoints = nostradamus.getNextDeathPoints(2);
-			if(deathPoints[0] != null)
+			/*if(deathPoints[0] != null)
 				visualizer.getWorld().getMarker1().setTransform(deathPoints[0], 0);
 			if(deathPoints[1] != null)
 				visualizer.getWorld().getMarker2().setTransform(deathPoints[1], 0);
 			System.out.println("Next death point: " + deathPoints[0]);
-			
-			/*if(deathPoint != null){
-				paddleMover.setTargets(deathPoint.y, 0);
-			}*/
+			*/
+			if(deathPoints[0] != null){
+				paddleMover.setTargets(deathPoints[0].y, 0);
+			}
 			
 			// TODO: do we do this even if the state is updated by message? try without
 			//serverClone.forward(blueprint.getTickInterval());
 			
 			//serverClone.advanceToPresentTime();
-			visualizer.update(serverClone.getSimulation().getCurrentState());
+			//visualizer.update(serverClone.getSimulation().getCurrentState());
 			
-			System.out.println("Running main loop...DONE");
+			//System.out.println("Running main loop...DONE");
 		}
 		
 		messenger.shutdown();

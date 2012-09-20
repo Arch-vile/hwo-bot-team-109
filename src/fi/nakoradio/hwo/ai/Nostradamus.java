@@ -24,7 +24,7 @@ public class Nostradamus {
 	}
 	
 	public Vec2[] getNextDeathPoints(int amount){
-		System.out.println("Finding next death points...");
+		//System.out.println("Finding next death points...");
 		
 		Vec2[] deathPoints = new Vec2[amount];
 		//this.world.setObjectPositions(this.serverClone.getCurrentBlueprint(), true);
@@ -40,10 +40,9 @@ public class Nostradamus {
 		// Just make sure that these are not excepted speeds at any point. Having minimum sizes for speed vector also helps to filter out the abnormal 
 		// speed vectors during bounces
 		if(ballSpeed.length() == 0 || Math.abs(ballSpeed.x) < 6 || Math.abs(ballSpeed.y) < 6){
-			System.err.println("Ball is not moving. Will skip getting death points.");
+			//System.err.println("Ball is not moving. Will skip getting death points.");
 			return deathPoints;
 		}
-		System.err.println(ballSpeed);
 		
 		this.world.getBall().setLinearVelocity(ballSpeed);
 		long t = System.currentTimeMillis();
@@ -58,14 +57,14 @@ public class Nostradamus {
 			while(collisions.getDeathPoint() == null){
 				counter++;
 				// TODO: something smarter... 
-				if(counter > 1000){ System.err.println("Death point search seems to be looping. Exiting"); return deathPoints; }
+				if(counter > 1000){ /*System.err.println("Death point search seems to be looping. Exiting");*/ return deathPoints; }
 				world.getPhysics().step(1f/60f, 10, 8);
 			}
 			
 			deathPoints[i] = collisions.popDeathPoint();
 		}
 		
-		System.out.println("Finding next death points - DONE");
+		//System.out.println("Finding next death points - DONE");
 		return deathPoints;
 	}
 	

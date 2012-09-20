@@ -89,7 +89,7 @@ public class SocketMessenger  implements Messenger {
 			return;
 		}
 		
-		
+		socket.getOut().println("{\"msgType\":\"changeDir\",\"data\":"+paddleDirection+"}");
 		
 		
 		
@@ -105,8 +105,8 @@ public class SocketMessenger  implements Messenger {
 			long oldestTimestamp = this.outputMessageTimestamps.get(0);
 			if(currentTimestamp - oldestTimestamp < (Constants.OUTPUT_MESSAGE_SPEED_LIMIT + Constants.OUTPUT_MESSAGE_SPEED_SAFE_FACTOR * Constants.OUTPUT_MESSAGE_COUNT_LIMIT) ){
 				System.err.println("Exceeded the output message limit");
-				System.exit(1);
-				// return true;
+				//System.exit(1);
+				 return true;
 			}
 			this.outputMessageTimestamps.remove(0);
 			

@@ -25,6 +25,7 @@ public class ServerCloneSynchronizer implements Runnable {
 	// TODO: one could also calculate this instead of loop.
 	// timestamp the next tick should be run
 	public long getNextTickStart(){
+		//System.out.println("Gettin next tick");
 		long nextTickTimestamp = this.clone.getCurrentBlueprint().getTimestamp();
 		while(nextTickTimestamp <= System.currentTimeMillis()){
 			nextTickTimestamp += this.clone.getCurrentBlueprint().getTickInterval();
@@ -52,18 +53,20 @@ public class ServerCloneSynchronizer implements Runnable {
 	}
 	
 	public void serverCloneUpdated() {
-		System.out.println("Rolling server clone to current time after model update");
+		//System.out.println("Rolling server clone to current time after model update");
 		this.batchUpdating = true;
 		
 		long forwardedTo = this.clone.getCurrentBlueprint().getTimestamp();
 		long nextTickStart = getNextTickStart(); //TODO: this is the same stamp that the main loop is waiting... or should be. add some printing. but what if it takes as more then 2xtick time to update here? then main loop would miss one tick?
+		
+		//System.out.println(forwardedTo + " , " + nextTickStart);
 		while(forwardedTo < nextTickStart){
 			forwardByTick();
 			forwardedTo += this.clone.getCurrentBlueprint().getTickInterval();
 		}
 		
 		this.batchUpdating = false;
-		System.out.println("Server clone back in real time");
+		//System.out.println("Server clone back in real time");
 	}
 	
 	private void act() throws InterruptedException {

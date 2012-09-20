@@ -40,7 +40,8 @@ public class PaddleMover implements Runnable {
 			newThrottle = 1;
 		
 		if(newThrottle != this.throttle){
-			messenger.sendPaddleMovementMessage(newThrottle);
+			this.throttle = newThrottle;
+			messenger.sendPaddleMovementMessage(this.throttle);
 		}
 		
 	}
@@ -68,7 +69,8 @@ public class PaddleMover implements Runnable {
 		
 		try{
 			while(!Thread.interrupted() && this.running){
-				Thread.sleep(5); 
+				//TODO: !!!!!! if this is small as we want it to be.. like 5 then message count is exceeded
+				Thread.sleep(50); 
 				act();
 			}
 			
