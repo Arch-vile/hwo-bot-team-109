@@ -67,6 +67,7 @@ public class PaddleMover implements Runnable {
 		Vec2 currentSpeed = this.serverClone.getMyPaddleSpeed();
 		if(currentSpeed.length() > this.evaluatedMaxSpeed){
 			this.evaluatedMaxSpeed = currentSpeed.length();
+			logger.trace("New maxspeed evaluated: " + this.evaluatedMaxSpeed);
 		}
 	}
 
