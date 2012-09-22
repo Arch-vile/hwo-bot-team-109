@@ -24,8 +24,7 @@ public class SimulatedMessenger implements Messenger {
 			initStateMessage = new InputMessage(initState);
 			Blueprint blueprint = new Blueprint(initStateMessage.getStateInTime());
 			this.simulation = new PhysicsWorld(new World(new Vec2(0,0), true), blueprint);
-			//xxxxthis.simulation.getBall().applyLinearImpulse(new Vec2(5000,7000), this.simulation.getBall().getPosition());
-			this.simulation.getBall().setLinearVelocity(new Vec2(200,-10));
+			this.simulation.getBall().setLinearVelocity(new Vec2(40,40));
 			
 			this.controlMessages = new SizedStack<InputMessage>(50);
 			this.positionMessages = new SizedStack<InputMessage>(50);
@@ -42,12 +41,22 @@ public class SimulatedMessenger implements Messenger {
 		
 		long timeStamp = System.currentTimeMillis();
 		long latency = 20;
+		float dt = 1f/60f;
+		float sumt = 0;
+		float tickTime = 30f/1000f;
 		try{
 		
 			while(!Thread.interrupted() && this.running){
 				
-				simulation.getPhysics().step(1f/60f, 10, 8);
-				Thread.sleep(20);
+				
+				Thread.sleep((long)(tickTime*1000));
+				while(sumt < tickTime){
+					simulation.getPhysics().step(dt, 10, 8);
+					sumt += dt;
+				}
+				sumt -= tickTime;
+				
+				
 				
 				// Lets simulate variable latency
 				if(System.currentTimeMillis()-timeStamp > latency){
@@ -59,7 +68,7 @@ public class SimulatedMessenger implements Messenger {
 					else if(random >= 980 && random < 992) latency = 1000;
 					else if(random >= 992 && random < 1000) latency = 5000;
 					else latency = 20;
-					latency = 20;
+					latency = 1;
 					
 					String messageData = this.getStateAsJSON();
 					try {
@@ -159,6 +168,13 @@ public class SimulatedMessenger implements Messenger {
 		InputMessage toReturn = this.latestPositionMessage;
 		this.latestPositionMessage = null;
 		return toReturn;
+	}
+
+
+	@Override
+	public void sendJoinMessage(String botname, String dueler) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

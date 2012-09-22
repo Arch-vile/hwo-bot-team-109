@@ -29,11 +29,20 @@ public class GameVisualizer {
 	public void update(Blueprint blueprint){
 		if(this.simulation == null)
 			this.simulation = new PhysicsWorld(this.world, blueprint);
-		this.simulation.setObjectPositions(blueprint, true);
+		this.simulation.setObjectPositions(blueprint);
 	}
 
 	public PhysicsWorld getWorld(){
 		return this.simulation;
+	}
+
+	public void plotDeathPoints(Vec2[] deathPoints) {
+		if(deathPoints[0] != null)
+			getWorld().getMarker1().setTransform(new Vec2(deathPoints[0]), 0);
+		/*xxxx
+		if(deathPoints[1] != null)
+			getWorld().getMarker2().setTransform(new Vec2(deathPoints[1]), 0);
+		*/
 	}
 	
 	

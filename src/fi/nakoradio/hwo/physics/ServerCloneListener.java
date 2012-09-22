@@ -3,6 +3,8 @@ package fi.nakoradio.hwo.physics;
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.Manifold;
+import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.contacts.Contact;
 
 import fi.nakoradio.hwo.ai.ServerClone;
@@ -17,12 +19,18 @@ public class ServerCloneListener implements ContactListener {
 
 	@Override
 	public void beginContact(Contact contact) {
-		//System.out.println("Contact " + this.getClass().getName());
 		
-		if(		(contact.getFixtureA().getBody() == serverClone.getSimulation().getOpponentPaddle() || contact.getFixtureB().getBody() == serverClone.getSimulation().getOpponentPaddle() ) &&
-				(contact.getFixtureA().getBody() == serverClone.getSimulation().getPhantom() || contact.getFixtureB().getBody() == serverClone.getSimulation().getPhantom() )){
-			//System.out.println("Hit opponent " + System.currentTimeMillis());
-			serverClone.getSimulation().getPhantom().setLinearVelocity( serverClone.getSimulation().getPhantom().getLinearVelocity().add(serverClone.getOpponentPaddleSpeed()));
+		Body opponentPaddle = serverClone.getSimulation().getOpponentPaddle();
+		Body ball = serverClone.getSimulation().getBall();
+		Body fixtureA = contact.getFixtureA().getBody();
+		Body fixtureB = contact.getFixtureB().getBody();
+		
+		
+		
+		if(		(fixtureA == opponentPaddle || fixtureB == opponentPaddle ) && (fixtureA == ball || fixtureB == ball )){
+			Vec2 ballSpeed = new Vec2(ball.getLinearVelocity());
+			Vec2 opponentPaddleSpeed = new Vec2(serverClone.getOpponentPaddleSpeed());
+			ball.setLinearVelocity( ballSpeed.add(opponentPaddleSpeed));
 		}
 		
 		
@@ -45,6 +53,7 @@ public class ServerCloneListener implements ContactListener {
 		// TODO Auto-generated method stub
 		
 	}
+	
 	
 
 }

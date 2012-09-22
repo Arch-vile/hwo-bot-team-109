@@ -3,6 +3,8 @@ package fi.nakoradio.hwo.integration.core;
 import java.io.BufferedReader;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 import fi.nakoradio.hwo.physics.Constants;
 import fi.nakoradio.hwo.util.SizedStack;
 
@@ -12,10 +14,9 @@ public class SocketMessenger  implements Messenger {
 	private SizedStack<InputMessage> positionMessages;
 	private InputMessage latestPositionMessage;
 	private BotSocket socket;
-	
-	private long lastMoveMessageTimestamp;
-	
 	private Vector<Long> outputMessageTimestamps;
+	
+	private static Logger logger = Logger.getLogger(SocketMessenger.class);
 	
 	public SocketMessenger(){
 		this.outputMessageTimestamps = new Vector<Long>();
@@ -40,14 +41,17 @@ public class SocketMessenger  implements Messenger {
 			BufferedReader in = new BufferedReader(this.socket.getIn());
 			String messageData = "";
 			while (!Thread.interrupted() && (messageData = in.readLine()) != null) {
-				long timestamp = System.currentTimeMillis();
 				try {
 					InputMessage message = new InputMessage(messageData);
-					if(message.isGameOverMessage() || message.isGameStartedMessage() || message.isJoinedMessage()) controlMessages.push(message);
+					logger.info(messageData);
+					
+					if(message.isGameOverMessage() || message.isGameStartedMessage() || message.isJoinedMessage()){
+						controlMessages.push(message);
+					}
+					
 					if(message.isGameIsOnMessage()){ 
 						positionMessages.push(message);
 						this.latestPositionMessage = message;
-						//System.out.println("Difference: " + (System.currentTimeMillis() - message.getTime()));
 					}
 					
 				}catch(BadInputMessageException e){
@@ -79,6 +83,12 @@ public class SocketMessenger  implements Messenger {
 	@Override
 	public void sendJoinMessage(String name){
 		socket.getOut().println("{\"msgType\":\"join\",\"data\":\""+name+"\"}");
+	}
+	
+	@Override
+	public void sendJoinMessage(String botname, String dueler) {
+		String message =  "{\"msgType\":\"requestDuel\",\"data\":[\""+botname+"\", \""+dueler+"\"]}";
+		socket.getOut().println(message);
 	}
 
 	@Override
@@ -146,6 +156,8 @@ public class SocketMessenger  implements Messenger {
 		}
 		
 	}
+
+	
 	
 	
 }

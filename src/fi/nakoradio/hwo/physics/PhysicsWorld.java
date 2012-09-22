@@ -28,7 +28,6 @@ public class PhysicsWorld {
 	World world;
 	Body arena;
 	Body ball;
-	Body phantom;
 	Body myPaddle;
 	Body opponentPaddle;
 	Body myDeathLine;
@@ -61,7 +60,6 @@ public class PhysicsWorld {
 		this.blueprint = blueprint;
 		createWalls(blueprint.getArena());
 		createBall(blueprint.getBall());
-		createPhantom(blueprint.getBall());
 		marker1 = createMarker(2,2);
 		marker2 = createMarker(6,6);
 		this.myPaddle = createPaddle(blueprint.getMyPaddle());
@@ -72,16 +70,15 @@ public class PhysicsWorld {
 	}
 	
 	
-	public void setObjectPositions(Blueprint blueprint, boolean updatePhantom) {
+	public void setObjectPositions(Blueprint blueprint) {
 		
 		//TODO: we really should copy the blueprint instead of reference as it could be shared between other models
 		this.blueprint = blueprint;
 		
 		// TODO: we do not detect changes in static arena variables. etc width, height and radius
-		if(this.ball != null) this.ball.setTransform(blueprint.getBall().getPosition(),0);
-		if(updatePhantom && this.phantom != null && blueprint.getPhantom() != null) this.phantom.setTransform(blueprint.getPhantom().getPosition(),0);
-		if(this.myPaddle != null) this.myPaddle.setTransform(blueprint.getMyPaddle().getCenterPosition(),0);
-		if(this.opponentPaddle != null) this.opponentPaddle.setTransform(blueprint.getOpponentPaddle().getCenterPosition(), 0);
+		if(this.ball != null) this.ball.setTransform(new Vec2(blueprint.getBall().getPosition()),0);
+		if(this.myPaddle != null) this.myPaddle.setTransform(new Vec2(blueprint.getMyPaddle().getCenterPosition()),0);
+		if(this.opponentPaddle != null) this.opponentPaddle.setTransform(new Vec2(blueprint.getOpponentPaddle().getCenterPosition()), 0);
 		
 	}
 	
@@ -90,8 +87,6 @@ public class PhysicsWorld {
 		StateInTime state = new StateInTime();
 		state.setBallX(getBall().getPosition().x);
 		state.setBallY(getBall().getPosition().y);
-		state.setPhantomX(getPhantom().getPosition().x);
-		state.setPhantomY(getPhantom().getPosition().y);
 		state.setLeftPlayerY(this.blueprint.getMyPaddle().toLowerLeftCornerPosition(getMyPaddle().getPosition()).y);
 		state.setRightPlayerY(this.blueprint.getOpponentPaddle().toLowerLeftCornerPosition(getOpponentPaddle().getPosition()).y);
 		
@@ -110,10 +105,6 @@ public class PhysicsWorld {
 
 	
 	
-	public Body getPhantom() {
-		return phantom;
-	}
-
 	private void createOpponentDeathLine(Blueprint blueprint) {
 		
 		BodyDef edgeBodyDef = new BodyDef();
@@ -207,28 +198,6 @@ public class PhysicsWorld {
 		this.ball.createFixture(fixtureDef);
 		
 	
-	}
-	
-	private void createPhantom(Ball ball) {
-		if(ball == null) return;
-		
-		BodyDef def = new BodyDef();
-		def.type = BodyType.DYNAMIC;
-		def.bullet = true; //
-		def.position.set(ball.getPosition());
-		this.phantom = getPhysics().createBody(def);
-		
-		CircleShape ballShape = new CircleShape();
-		ballShape.m_radius = ball.getRadius();
-		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.shape = ballShape;
-		fixtureDef.density = 1f;
-		fixtureDef.friction = 0f;
-		fixtureDef.restitution = 1f;
-		fixtureDef.filter.categoryBits = CATEGORY_BALL;
-		fixtureDef.filter.maskBits = CATEGORY_BOUNDARY | CATEGORY_PADDLE | CATEGORY_SENSORS;
-		this.phantom.createFixture(fixtureDef);
-		
 	}
 	
 	private Body createPaddle(Paddle paddle) {

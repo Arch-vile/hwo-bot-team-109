@@ -2,7 +2,7 @@ package fi.nakoradio.hwo.model.objects;
 
 import org.jbox2d.common.Vec2;
 
-public class Paddle {
+public class Paddle implements ModelObject {
 
 	private float width;
 	private float height;
@@ -43,6 +43,11 @@ public class Paddle {
 	
 	public Vec2 toLowerLeftCornerPosition(Vec2 centerPosition){
 		return centerPosition.sub(new Vec2(this.width/2,this.height/2));
+	}
+
+	@Override
+	public Vec2 getPosition() {
+		return this.getCenterPosition();
 	}
 	
 	

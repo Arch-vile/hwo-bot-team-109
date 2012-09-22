@@ -12,4 +12,5 @@ public interface Messenger  extends Runnable{
 	public void sendPaddleMovementMessage(float paddleDirection);
 	public InputMessage peekLatestPositionMessage();
 	public InputMessage popLatestPositionMessage();
+	public void sendJoinMessage(String botname, String dueler);
 }

@@ -1,7 +1,14 @@
 package fi.nakoradio.hwo.ai;
 
+import org.apache.log4j.Logger;
+import org.jbox2d.common.Vec2;
+
+import fi.nakoradio.hwo.physics.visualization.GameVisualizer;
+
 public class ServerCloneSynchronizer implements Runnable {
 
+	private static Logger logger = Logger.getLogger(ServerCloneSynchronizer.class);
+	
 	private Thread thread;
 	public boolean running = false;
 	private ServerClone clone;
@@ -10,6 +17,11 @@ public class ServerCloneSynchronizer implements Runnable {
 	
 	public ServerCloneSynchronizer(ServerClone clone){
 		this.clone = clone;
+	}
+
+	// Returns the current time on server. We assume it to be in sycn with local time.
+	public long getServerTime(){
+		return System.currentTimeMillis()+0;
 	}
 	
 	public void start() {
@@ -25,9 +37,8 @@ public class ServerCloneSynchronizer implements Runnable {
 	// TODO: one could also calculate this instead of loop.
 	// timestamp the next tick should be run
 	public long getNextTickStart(){
-		//System.out.println("Gettin next tick");
 		long nextTickTimestamp = this.clone.getCurrentBlueprint().getTimestamp();
-		while(nextTickTimestamp <= System.currentTimeMillis()){
+		while(nextTickTimestamp <= getServerTime()){
 			nextTickTimestamp += this.clone.getCurrentBlueprint().getTickInterval();
 		}
 		return nextTickTimestamp;
@@ -42,7 +53,7 @@ public class ServerCloneSynchronizer implements Runnable {
 			// We want this to match the actual tick event on the server. i.e the ticks will happen at same time local and server
 			while(!Thread.interrupted() && this.running){
 				long sleepTillNextTick = getNextTickStart() - System.currentTimeMillis();
-				Thread.sleep(sleepTillNextTick); 
+				Thread.sleep(sleepTillNextTick);
 				act();
 			}
 			
@@ -53,33 +64,28 @@ public class ServerCloneSynchronizer implements Runnable {
 	}
 	
 	public void serverCloneUpdated() {
-		//System.out.println("Rolling server clone to current time after model update");
 		this.batchUpdating = true;
 		
 		long forwardedTo = this.clone.getCurrentBlueprint().getTimestamp();
 		long nextTickStart = getNextTickStart(); //TODO: this is the same stamp that the main loop is waiting... or should be. add some printing. but what if it takes as more then 2xtick time to update here? then main loop would miss one tick?
 		
-		//System.out.println(forwardedTo + " , " + nextTickStart);
 		while(forwardedTo < nextTickStart){
 			forwardByTick();
 			forwardedTo += this.clone.getCurrentBlueprint().getTickInterval();
 		}
-		
 		this.batchUpdating = false;
-		//System.out.println("Server clone back in real time");
 	}
 	
 	private void act() throws InterruptedException {
-//		System.out.print("Simulating...");
-		
+		logger.trace("act() - START");
 		// TODO: maybe to do this nicer?
 		while(batchUpdating) Thread.sleep(1); 
 		forwardByTick();
-		
-	//	System.out.println("DONE");
+		logger.trace("act() - DONE");
 	}
 	
-	private void forwardByTick() {
+	public void forwardByTick() {
+		
 		int dtDivider = (int)(((float)this.clone.getCurrentBlueprint().getTickInterval()) / (1f/60f*1000f)+1); 
 		float dt = ((float)this.clone.getCurrentBlueprint().getTickInterval()) / dtDivider / 1000f;
 
