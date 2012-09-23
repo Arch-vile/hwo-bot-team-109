@@ -34,6 +34,8 @@ public class PaddleMover implements Runnable {
 	private boolean targetReached = false;
 	
 	private long synchronizerLastRun = 0;
+
+	private float myLastPos = 0;
 	
 	public PaddleMover(ServerClone serverClone, Messenger messenger, ServerCloneSynchronizer synchronizer) {
 		this.serverClone = serverClone;
@@ -51,14 +53,32 @@ public class PaddleMover implements Runnable {
 		
 		logger.debug("act() - START");
 		
-		//xxxupdateMaxSpeed();
 		
 		float myPos = serverClone.getSimulation().getMyPaddle().getPosition().y;
+		
+		/// hack to detect paddle bounce on wall.. 
+		// for some reason serverClone.getSimulation().getMyPaddle().getLinearVelocity().y < 0 && this.throttle > 0 did not detect it
+		if( 	(myPos - this.myLastPos  > 0 && this.throttle < 0) ||
+				(myPos - this.myLastPos  < 0 && this.throttle > 0)){
+			logger.debug("Something wrong? direction and throttle not matching");
+			this.throttle = 0;
+			this.targetReached = false;
+			serverClone.setMyPaddleSpeed(new Vec2(0,0));
+		}
+		
+		
 		float optimizedTarget = calculateOptimizedTarget();
 		float distanceToTarget = Math.abs(myPos-optimizedTarget);
 		float newThrottle = 0;
 		
-		logger.debug("Target reached: " + this.targetReached);
+		logger.debug("Target reached: " + this.targetReached + 
+				" current optimized target: " + optimizedTarget + 
+				" my position: " + myPos + " last pos: " + this.myLastPos +
+				" current throttle: " + Utils.toStringFormat(this.throttle));
+		
+		
+		this.myLastPos = myPos;
+		
 		if(!this.targetReached){
 			
 			if(distanceToTarget > getMaxDistanceInOneTick()){
@@ -67,21 +87,42 @@ public class PaddleMover implements Runnable {
 				newThrottle = getThrottleToReachTargetInOneTick(distanceToTarget) * getThrottleDirection(myPos,optimizedTarget);
 			}
 			
-			logger.debug("Decided required throttle: " + Utils.toStringFormat(newThrottle));
+			logger.debug("We should use throttle: " + Utils.toStringFormat(newThrottle));
 			if(newThrottle != this.throttle){
-				this.throttle = newThrottle;
-				if(Math.abs(newThrottle) <= 0.0001){ 
+				//this.throttle = newThrottle;
+				float paddleSpeed = newThrottle * serverClone.getDeterminedPaddleMaxSpeed();
+				if(Math.abs(newThrottle) <= 0.0001){// || Math.abs(myPos-optimizedTarget) < serverClone.getCurrentBlueprint().getMyPaddle().getHeight()/5 ){ 
 					logger.debug("Target REACHED. Lets stop");
 					this.targetReached = true; 
 					this.throttle  = 0;
-					messenger.sendPaddleMovementMessage(this.throttle);
-					serverClone.setMyPaddleSpeed(new Vec2(0,this.throttle));
+					paddleSpeed = 0;
 				}else {
 					logger.debug("Decided on paddle direction: " + Utils.toStringFormat(newThrottle) + " in position " + Utils.toStringFormat(myPos) + " when target was " + Utils.toStringFormat(optimizedTarget));
-					messenger.sendPaddleMovementMessage(newThrottle);
-					//xxxxserverClone.setMyPaddleSpeed(new Vec2(0,newThrottle * this.evaluatedMaxSpeed));
-					serverClone.setMyPaddleSpeed(new Vec2(0,newThrottle * serverClone.getDeterminedPaddleMaxSpeed()));
 				}
+				
+				/*while(!messenger.messageStackAvailable()){
+					logger.debug("Exceeded the output pipe. Forced to wait");
+					try { Thread.sleep(5); } catch(Exception e){ logger.error("Failed to sleep"); }
+				}*/
+				/*boolean sentOk = false;
+				while(!sentOk){
+					if(messenger.canMessageBeSent()){
+						messenger.sendPaddleMovementMessage(newThrottle);
+						this.throttle = newThrottle;
+						serverClone.setMyPaddleSpeed(new Vec2(0,paddleSpeed));
+						sentOk = true;
+					}else {
+						try { Thread.sleep(5); } catch(Exception e){ }
+					}
+				}*/
+				if(messenger.sendPaddleMovementMessage(newThrottle)){
+					this.throttle = newThrottle;
+					serverClone.setMyPaddleSpeed(new Vec2(0,paddleSpeed));
+				}
+				
+				
+			}else {
+				logger.debug("Current throttle was already set to that");
 			}
 		}
 		
@@ -136,7 +177,7 @@ public class PaddleMover implements Runnable {
 		
 		// Lets not recalculate if targets have not changed
 		if(newTargetsForOptimizer ){
-			logger.debug("New targets set so we need to calculate the optimized target");
+			logger.debug("New targets set so we need to calculate the optimized target for target1: " + this.firstTarget + " and target2: " + this.secondTarget);
 			newTargetsForOptimizer = false;
 			this.targetReached = false;
 			
@@ -168,7 +209,6 @@ public class PaddleMover implements Runnable {
 				if(w != null) w.getMarker(2).setTransform(new Vec2(0,target), 0f);
 			}
 			
-			if(Math.abs(target-this.lastOptimizedTarget) > 2) this.targetReached = false;
 			this.lastOptimizedTarget = target;
 			return target;
 		}
@@ -211,7 +251,9 @@ public class PaddleMover implements Runnable {
 
 
 	public void setTargets(Vec2[] deathPoints) {
-		
+		logger.debug("Setting targets");
+		if(deathPoints.length >= 1) logger.debug("Setting target1: " + deathPoints[0]);
+		if(deathPoints.length >= 2) logger.debug("Setting target2: " + deathPoints[1]);
 		if(deathPoints.length >= 1 && deathPoints[0] != null && Math.abs(this.firstTarget - deathPoints[0].y) > 2){
 			logger.debug("new target1 difference: " + Math.abs(this.firstTarget - deathPoints[0].y));
 			this.firstTarget = deathPoints[0].y;

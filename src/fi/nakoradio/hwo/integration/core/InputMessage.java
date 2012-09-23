@@ -163,6 +163,11 @@ public class InputMessage {
 		// double msgType field
 		try { new InputMessage("{ msgType: \"foobar\",msgType: \"karhu\" }"); }catch(Exception e){ System.err.println(e); }
 		
+		
+		try { InputMessage m = new InputMessage("{\"msgType\":\"gameIsOn\",\"data\":{\"time\":232323233333333,\"left\":{\"y\":25.89999999555555555555555555555555555555555555555555555555555555555555555555555555555555555555555999933444444444444444444444444444444444444444444444444433333333333333333333333333333333333333333333333977,\"playerName\":\"raipevisu\"},\"right\":{\"y\":235.705962,\"playerName\":\"raipekonsoli\"},\"ball\":{\"pos\":{\"x\":205.0250627973819,\"y\":295.3037443735099}},\"conf\":{\"maxWidth\":640,\"maxHeight\":480,\"paddleHeight\":50,\"paddleWidth\":10,\"ballRadius\":5,\"tickInterval\":30}}}"); 
+			System.out.println(m.getRightPlayerY());
+		}catch(Exception e){ System.err.println(e); }
+		
 		//TODO: add more checks for message format
 	}
 

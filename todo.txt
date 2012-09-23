@@ -4,31 +4,16 @@
 		
 - !!!!! käy läpi kaikki kovakoodatut arvot ja tarkasta
 - !!!! Simuloi vastustajan päädyn kimpoamista... nyt simuloitu seinänä
-- make death point calculations one step forward and make paddle to move optimized by these two points
 - for each loop make a end condition trigger to prevent eternal loops
 - how to react to latency
-- how to react if no messages are coming from server? should not be a problem as we have simulation. but paddle movement must be smart.
 - move all config variables to constants
 - should we be ready for unordered list of input messages? 
 - also be ready to handle messages that have somewhat unacceptable fields.. etc. coordinates with too many decimals -> substring them
-- FAQ: Miten liikkessä olevan mailan osuma palloon vaikuttaa pallon lentorataan?
-	Olisi aika tylsää paljastaa huipputieteellisen fysiikkamoottorin käyttämät yhtälöt, joten pidetään jännitystä yllä ja suositellaan empiiristä lähestymistapaa. 100% realistista tennisfysiikkaa lienee kuitenkin turha odottaa.
 - varmista että meneekö tikin edistäminen ja muut actionit oikeassa järjestyksessä siten että matchaavat pelimaailmaa
-- jos tick aika on iso niin lähetetty mailan liikutusviesti voi liikuttaa mailaa hyvinkin paljon. eli ei saisi lähettää maksiminipeutta jos tick todellla iso. miten muuten vaikuttaa?
 - nyt serveri timestampit matchaa tick aikaan. mutta voisihan myös olla että tick aika ja sleep aika serverillä eivät olisi samat. eli 
 peli voisi pyöriä reaalimaailmaa nopeammin
-- !!!!kimmotukset mailan päädyllä tuntuvat toimivan täysin eri tavoin. eli servulla ilmeisesti ei voi mailan päädyllä kimmotta vaan se on aina suora pinta.
-	kimmotuksissa voisi simussa käyttää siis ehkäpä pidempää mailaa?
-- tee koodista botti, jotta voit laittaa kaksi bottia pelaamaan keskenään
-- miten pitäisi varautua siihen että lapa kimpoaa laidoista
-- !!!! NTP asetus koneelle - miten image?
-- !!!missä tilanteissa viestejä lähtisi yli 10 sekunnissa. millä ympäristö arvoilla. miten reagoida tilanteeseen?
-- mitä jos palvelin ei ajakaan reaaliajassa?
-- !!!etsi kaikki system.exit koodista
-- !!!!!!!! varmista mitä tarkoitettaan viestien määrän juoksevalla rajalla
 - !!!!!!! pitäisi tosiaan skaalata... pitäisi olla 1-10 kokoluokkaa
 - !!! miten varmistaa että ei ole kokoaja yhtä tikkiä edessä/jäljessä. loogisesti vaikea päätellä.
-- !!!!!!!!!!!! lokien keräys. viestit + timestampit. lähteneet + saapuneet
 - !!!!!!!Satunnainen virhe. on selvittävä tästä... ei saa jäädä jumiin
 Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Array index out of range: -1
 	at org.jbox2d.pooling.stacks.DynamicIntStack.pop(DynamicIntStack.java:44)
@@ -40,7 +25,5 @@ Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Array index
 	at fi.nakoradio.hwo.physics.visualization.GameVisualizer.update(GameVisualizer.java:32)
 	at fi.nakoradio.hwo.main.HWOBot.main(HWOBot.java:71)
 	
-- !!! there is something happening on each bounce... some twitch.. death points change for brief while and then return back
-- !!!!!! lisenssitarkistukset
 - testaa mitä tapahtuu jos laittaa throttle arvoja yli 1
 -- !! valmistaudu siihen että throttle viestejä tippuu satunnaisesti 

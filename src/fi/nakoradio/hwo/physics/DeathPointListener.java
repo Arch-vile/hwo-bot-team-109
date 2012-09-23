@@ -5,29 +5,54 @@ import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.WorldManifold;
 import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.contacts.Contact;
+
+import fi.nakoradio.hwo.ai.ServerClone;
 
 public class DeathPointListener implements ContactListener {
 
 	PhysicsWorld world;
 	Vec2 deathPoint;
-	private String id;
+	private ServerClone clone;
 	
-	public DeathPointListener(PhysicsWorld world, String id){
+	public DeathPointListener(PhysicsWorld world, ServerClone clone){
 		this.world = world;
-		this.id = id;
 		this.world.getPhysics().setContactListener(this);
+		this.clone = clone;
 	}
 	
 	
 	@Override
 	public void beginContact(Contact contact) {
 
-		//System.out.println("Contact " + this.getClass().getName());
+		Body myDeathLine = world.getMyDeathLine();
+		Body opponentDeathLine = world.getOpponentDeathLine();
+		Body ball = world.getBall();
+		Body fixtureA = contact.getFixtureA().getBody();
+		Body fixtureB = contact.getFixtureB().getBody();
+		
+		// Simulate hit to opponent paddle
+		if(		(fixtureA == opponentDeathLine || fixtureB == opponentDeathLine ) && (fixtureA == ball || fixtureB == ball )){
+			Vec2 newBallSpeed = new Vec2(ball.getLinearVelocity());
+			float maxSpeed = clone.getDeterminedPaddleMaxSpeed();
+			
+			// going downwards
+			if(ball.getLinearVelocity().y < 0){
+				newBallSpeed.add(new Vec2(0,-1*maxSpeed));
+			}
+			
+			/// going upwards
+			if(ball.getLinearVelocity().y > 0){
+				newBallSpeed.add(new Vec2(0,maxSpeed));
+			}
+			
+			ball.setLinearVelocity(newBallSpeed);
+		}
 		
 		
-		if(		(contact.getFixtureA().getBody() == world.getMyDeathLine() || contact.getFixtureB().getBody() == world.getMyDeathLine() ) &&
-				(contact.getFixtureA().getBody() == world.getBall() || contact.getFixtureB().getBody() == world.getBall() )){
+		// Track my death points
+		if(		(fixtureA == myDeathLine || fixtureB == myDeathLine ) && (fixtureA == ball || fixtureB == ball )){
 			// TODO: Other cases where we should copy instead of reference? Here the balls vector is changing so the deathPoint keeps changing also
 			this.deathPoint = new Vec2(world.getBall().getPosition());
 			//System.out.println("DEATH AT: " + deathPoint);

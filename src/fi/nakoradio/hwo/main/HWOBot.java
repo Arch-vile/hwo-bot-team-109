@@ -77,19 +77,21 @@ public class HWOBot {
 
 	private boolean runGame(){
 		
+
+		while(messenger.peekLatestPositionMessage() == null) { try { Thread.sleep(10); } catch(Exception e){} }
+		Blueprint blueprint = new Blueprint(messenger.popLatestPositionMessage().getStateInTime());
+		ServerClone serverClone = new ServerClone(blueprint);
+		Nostradamus nostradamus = new Nostradamus(serverClone);
+		ServerCloneSynchronizer synchronizer = new ServerCloneSynchronizer(serverClone);
+		PaddleMover paddleMover = new PaddleMover(serverClone, messenger, synchronizer);
+		
 		// There is a crashing bug in the box2d... lets try to recover
 		try{
-		
 			logger.info("Waiting for first status message");
-			while(messenger.peekLatestPositionMessage() == null) { try { Thread.sleep(10); } catch(Exception e){} }
-			Blueprint blueprint = new Blueprint(messenger.popLatestPositionMessage().getStateInTime());
-			HWOBot.firstPosMessageTime = blueprint.getTimestamp();
-			ServerClone serverClone = new ServerClone(blueprint);
-			Nostradamus nostradamus = new Nostradamus(serverClone);
-			ServerCloneSynchronizer synchronizer = new ServerCloneSynchronizer(serverClone);
-			PaddleMover paddleMover = new PaddleMover(serverClone, messenger, synchronizer);
-			paddleMover.start();
 			
+			HWOBot.firstPosMessageTime = blueprint.getTimestamp();
+			
+			paddleMover.start();
 			synchronizer.start();
 			
 			logger.info("Starting the main loop");
@@ -150,23 +152,28 @@ public class HWOBot {
 				
 				logger.debug("Main loop - END");
 			}
-			
-			
-			paddleMover.shutdown();
-			synchronizer.shutdown();
-			return true;
 		}catch(Exception e){
 			logger.error("Box2d crash" + e);
 			logger.error(e);
-			return true;
 		}
+		
+		paddleMover.shutdown();
+		synchronizer.shutdown();
+		return true;
 	}
 
 
 	
 	public static void main(String[] args){
+		System.out.println("./start.sh <name> <host> <port>");
 		logger.info("HWOBot called with arguments: ");
 		for(String argument : args) logger.info(argument);
+		
+		
+		if(args.length < 3){
+			System.out.println("You need to give name, host and port as arguments");
+			System.exit(1);
+		}
 		
 		String botname = args[0];
 		String host = args[1];

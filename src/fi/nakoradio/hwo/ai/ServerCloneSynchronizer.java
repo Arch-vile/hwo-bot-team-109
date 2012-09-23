@@ -93,7 +93,7 @@ public class ServerCloneSynchronizer implements Runnable {
 	}
 	
 	public void forwardByTick() {
-		
+		logger.trace("Forwarding by one tick");
 		int dtDivider = (int)(((float)this.clone.getCurrentBlueprint().getTickInterval()) / (1f/60f*1000f)+1); 
 		float dt = ((float)this.clone.getCurrentBlueprint().getTickInterval()) / dtDivider / 1000f;
 

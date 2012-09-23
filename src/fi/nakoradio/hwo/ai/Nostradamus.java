@@ -28,7 +28,7 @@ public class Nostradamus {
 		boolean forNostradamus = true;
 		// TODO: we should have a world that simulates bounces from paddles instead of plain walls
 		this.world = new PhysicsWorld(new World(new Vec2(0,0),true), serverClone.getCurrentBlueprint(), forNostradamus);
-		this.collisions = new DeathPointListener(world,"Nostradamus");
+		this.collisions = new DeathPointListener(world,serverClone);
 	}
 	
 	public Vec2[] getNextDeathPoints(int amount){

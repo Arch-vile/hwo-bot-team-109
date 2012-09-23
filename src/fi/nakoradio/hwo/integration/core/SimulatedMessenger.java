@@ -145,9 +145,9 @@ public class SimulatedMessenger implements Messenger {
 	}
 
 	@Override
-	public void sendPaddleMovementMessage(float paddleDirection) {
+	public boolean sendPaddleMovementMessage(float paddleDirection) {
 		// TODO Auto-generated method stub
-
+		return true; 	
 	}
 
 
@@ -175,6 +175,14 @@ public class SimulatedMessenger implements Messenger {
 	public void sendJoinMessage(String botname, String dueler) {
 		// TODO Auto-generated method stub
 		
+	}
+
+
+
+	@Override
+	public boolean canMessageBeSent() {
+		// TODO Auto-generated method stub
+		return true;
 	}
 
 

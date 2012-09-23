@@ -79,9 +79,13 @@ public class SocketMessenger  implements Messenger {
 						controlMessages.push(message);
 					}
 					
+					if(message.isJoinedMessage())
+						System.out.println(messageData);
+					
 					if(message.isGameIsOnMessage()){ 
 						positionMessages.push(message);
 						this.latestPositionMessage = message;
+						System.out.print(".");
 					}
 					
 				}catch(BadInputMessageException e){
@@ -118,7 +122,7 @@ public class SocketMessenger  implements Messenger {
 	@Override
 	public void sendJoinMessage(String botname, String dueler) {
 		// TODO: how to recover nicely
-		if(recordMessageAndCheckExceed()){
+		if(!canMessageBeSent()){
 			return;
 		}
 		
@@ -126,24 +130,81 @@ public class SocketMessenger  implements Messenger {
 	}
 
 	@Override
-	public void sendPaddleMovementMessage(float paddleDirection) {
+	public boolean sendPaddleMovementMessage(float paddleDirection) {
 		
-		// TODO: how to recover nicely
-		if(recordMessageAndCheckExceed()){
-			return;
+		if(!canMessageBeSent()){
+			logger.error("Exceeded the message limit");
+			return false;
 		}
 		
 		sendMessage("{\"msgType\":\"changeDir\",\"data\":"+Utils.toStringFormat(paddleDirection)+"}");
+		return true;
 	}
 	
 	private void sendMessage(String message){
 		logger.debug("Sending message to socket: " + message);
+		this.outputMessageTimestamps.add(System.currentTimeMillis());
 		logToFile(message, true);
 		socket.getOut().println(message);
 	}
 
 	
+	public boolean canMessageBeSent(){
+		long currentTimeStamp = System.currentTimeMillis();
+		
+		boolean loop = true;
+		while(this.outputMessageTimestamps.size() != 0 && loop){
+			long oldestTimeStamp = this.outputMessageTimestamps.get(0);
+			if(currentTimeStamp - oldestTimeStamp > 1100){
+				this.outputMessageTimestamps.remove(0);
+			} else {
+				loop = false;
+			}
+		}
+		
+		return this.outputMessageTimestamps.size() < 10;
+	}
+	
+	
+	
+	
+	
+	
+	/*public boolean messageStackAvailable(){
+		long currentTimestamp = System.currentTimeMillis();
+		if(this.outputMessageTimestamps.size() >= Constants.OUTPUT_MESSAGE_COUNT_LIMIT+1){
+			long oldestTimestamp = this.outputMessageTimestamps.get(0);
+			if(currentTimestamp - oldestTimestamp < (Constants.OUTPUT_MESSAGE_SPEED_LIMIT + Constants.OUTPUT_MESSAGE_SPEED_SAFE_FACTOR * Constants.OUTPUT_MESSAGE_COUNT_LIMIT) ){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	
+	
 	private boolean recordMessageAndCheckExceed() {
+		
+		long currentTimestamp = System.currentTimeMillis();
+		
+		
+		if(this.outputMessageTimestamps.size() >= Constants.OUTPUT_MESSAGE_COUNT_LIMIT){ // you can send the max. so use +1 here
+			long oldestTimestamp = this.outputMessageTimestamps.get(0);
+			if(currentTimestamp - oldestTimestamp < (Constants.OUTPUT_MESSAGE_SPEED_LIMIT + Constants.OUTPUT_MESSAGE_SPEED_SAFE_FACTOR * Constants.OUTPUT_MESSAGE_COUNT_LIMIT) ){
+				logger.error("Exceeded the output message limit");
+				//this.outputMessageTimestamps.remove(0);
+				//System.exit(1);
+				return true;
+			}
+			this.outputMessageTimestamps.add(currentTimestamp);
+			this.outputMessageTimestamps.remove(0);
+			
+		}
+	
+		return false;
+	}*/
+	
+	/*private boolean recordMessageAndCheckExceed() {
 		
 		long currentTimestamp = System.currentTimeMillis();
 		this.outputMessageTimestamps.add(currentTimestamp);
@@ -162,6 +223,7 @@ public class SocketMessenger  implements Messenger {
 	
 		return false;
 	}
+	*/
 
 	@Override
 	public InputMessage peekLatestPositionMessage() {
@@ -188,7 +250,7 @@ public class SocketMessenger  implements Messenger {
 		
 		for(int i = 0; i < 36; i++){
 			
-			m.recordMessageAndCheckExceed();
+			//m.recordMessageAndCheckExceed();
 			try{ Thread.sleep(200); } catch(Exception e){ }
 			
 		}
