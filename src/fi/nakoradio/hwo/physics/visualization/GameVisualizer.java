@@ -37,12 +37,17 @@ public class GameVisualizer {
 	}
 
 	public void plotDeathPoints(Vec2[] deathPoints) {
+		if(getWorld() == null) return;
 		if(deathPoints[0] != null)
-			getWorld().getMarker1().setTransform(new Vec2(deathPoints[0]), 0);
-		/*xxxx
+			getWorld().getMarker(0).setTransform(new Vec2(deathPoints[0]), 0);
 		if(deathPoints[1] != null)
-			getWorld().getMarker2().setTransform(new Vec2(deathPoints[1]), 0);
-		*/
+			getWorld().getMarker(1).setTransform(new Vec2(deathPoints[1]), 0);
+	}
+	
+	public void plotMarker(int index, Vec2 pos){
+		if(this.simulation.getMarker(index) != null){
+			this.simulation.getMarker(index).setTransform(new Vec2(pos), 0f);
+		}
 	}
 	
 	

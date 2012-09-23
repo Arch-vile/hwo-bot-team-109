@@ -47,7 +47,8 @@ public class Nostradamus {
 		// Just make sure that these are not excepted speeds at any point. Having minimum sizes for speed vector also helps to filter out the abnormal 
 		// speed vectors during bounces
 		
-		if(ballSpeed.length() == 0 || Math.abs(ballSpeed.x) < 6 || Math.abs(ballSpeed.y) < 6){
+		// dont add check for y-coordinate as then we will miss direct balls!
+		if(ballSpeed.length() == 0 || Math.abs(ballSpeed.x) < 6){
 			//System.err.println("Ball is not moving. Will skip getting death points.");
 			logger.trace("getNextDeathPoints() - END - too slow ball " + ballSpeed);
 			return deathPoints;
@@ -62,7 +63,7 @@ public class Nostradamus {
 			int counter = 0;
 			while(collisions.getDeathPoint() == null){
 				counter++;
-				// TODO: something smarter... 
+				// TODO: something smarter... but this is a safety measure
 				if(counter > 1000){ 
 					/*System.err.println("Death point search seems to be looping. Exiting");*/ 
 					logger.trace("getNextDeathPoints() - END - too many iterations");

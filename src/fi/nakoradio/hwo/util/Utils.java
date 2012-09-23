@@ -6,7 +6,7 @@ import org.jbox2d.common.Vec2;
 
 public class Utils {
 	
-	private static DecimalFormat df = new DecimalFormat("#.####");
+	private static DecimalFormat df = new DecimalFormat("0.000000");
 
 	public static String toString(Vec2[] points){
 		
@@ -22,6 +22,10 @@ public class Utils {
 
 	public static String toStringFormat(Vec2 t) {
 		return "(" + df.format(t.x) + "," +  df.format(t.y) + ")";
+	}
+	
+	public static String toStringFormat(float t) {
+		return df.format(t);
 	}
 	
 	

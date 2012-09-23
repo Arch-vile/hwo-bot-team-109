@@ -34,33 +34,6 @@ public class Ball {
 	}
 	
 	
-	// TODO: remove
-	// TODO: If there is a bounce and the two positions are before and after 
-	// the bounce -> we will get wrong vector. How ever the sample frequency
-	// should be quick enough for this not really to be a problem.
-	public Vec2 getSpeedxxx(){
-		
-		Vec2 speed = null;
-		
-		if(position == null || speedCalcPos == null || (this.position.equals(speedCalcPos))){
-			speed = new Vec2(0,0);
-		}else {
-			Vec2 distance = this.position.sub(speedCalcPos);
-			//long time = this.timestamp - this.speedCalcTimestamp;
-			
-			//Vec2 speed = distance.mul( 1f / ( distance.length() / time )  ); //xxxthis.position.sub(previousPosition);//xxxx.mul(1000);
-			//float speedValue = ( distance.length() / time );
-			distance.normalize();
-			//speed = distance.mul(speedValue);
-		}
-		
-		System.out.println(speed);
-		return speed;
-	}
-	
-	
-	
-	
 	
 }
 

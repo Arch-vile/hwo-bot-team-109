@@ -1,5 +1,8 @@
 package fi.nakoradio.hwo.physics;
 
+import java.util.Vector;
+
+import org.apache.log4j.Logger;
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -10,6 +13,7 @@ import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.World;
 
+import fi.nakoradio.hwo.ai.ServerClone;
 import fi.nakoradio.hwo.model.objects.Arena;
 import fi.nakoradio.hwo.model.objects.Ball;
 import fi.nakoradio.hwo.model.objects.Paddle;
@@ -18,6 +22,8 @@ import fi.nakoradio.hwo.model.objects.Blueprint;
 import fi.nakoradio.hwo.model.objects.StateInTime;
 
 public class PhysicsWorld {
+	
+	private static Logger logger = Logger.getLogger(PhysicsWorld.class);
 	
 	public static int CATEGORY_BOUNDARY =	0x0001;
 	public static int CATEGORY_SENSORS = 	0x0002;
@@ -32,8 +38,9 @@ public class PhysicsWorld {
 	Body opponentPaddle;
 	Body myDeathLine;
 	Body opponentDeathLine;
-	Body marker1;
-	Body marker2;
+	//xxxBody marker1;
+	//xxxBody marker2;
+	Vector<Body> markers;
 	
 	Fixture myEnd;
 	
@@ -60,8 +67,13 @@ public class PhysicsWorld {
 		this.blueprint = blueprint;
 		createWalls(blueprint.getArena());
 		createBall(blueprint.getBall());
-		marker1 = createMarker(2,2);
-		marker2 = createMarker(6,6);
+		//xxxxmarker1 = createMarker(2,2);
+		//xxxmarker2 = createMarker(6,6);
+		this.markers = new Vector<Body>();
+		createMarker(2,2);
+		createMarker(6,6);
+		createMarker(2,2);
+		
 		this.myPaddle = createPaddle(blueprint.getMyPaddle());
 		this.opponentPaddle = createPaddle(blueprint.getMyPaddle());
 		
@@ -77,7 +89,10 @@ public class PhysicsWorld {
 		
 		// TODO: we do not detect changes in static arena variables. etc width, height and radius
 		if(this.ball != null) this.ball.setTransform(new Vec2(blueprint.getBall().getPosition()),0);
-		if(this.myPaddle != null) this.myPaddle.setTransform(new Vec2(blueprint.getMyPaddle().getCenterPosition()),0);
+		if(this.myPaddle != null){
+			
+			this.myPaddle.setTransform(new Vec2(blueprint.getMyPaddle().getCenterPosition()),0);
+		}
 		if(this.opponentPaddle != null) this.opponentPaddle.setTransform(new Vec2(blueprint.getOpponentPaddle().getCenterPosition()), 0);
 		
 	}
@@ -223,7 +238,7 @@ public class PhysicsWorld {
 	    return paddleToCreate;
 	}
 
-	private Body createMarker(int width, int height) {
+	private void createMarker(int width, int height) {
 		BodyDef def = new BodyDef();
 		def.type = BodyType.STATIC;
 		Body marker = getPhysics().createBody(def);
@@ -240,17 +255,20 @@ public class PhysicsWorld {
 	
 		marker.setTransform(new Vec2(this.blueprint.getArena().getWidth()/2, this.blueprint.getArena().getHeight()/2),0);
 		marker.createFixture(fixtureDef);
-		return marker;
+		this.markers.add(marker);
 	}
 
+	public Body getMarker(int index){
+		return this.markers.get(index);
+	}
 	
-	public Body getMarker1(){
+	/*xxxxpublic Body getMarker1(){
 		return this.marker1;
 	}
 	
 	public Body getMarker2(){
 		return this.marker2;
-	}
+	}*/
 	
 	public World getPhysics() {
 		return world;

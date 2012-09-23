@@ -1,22 +1,29 @@
 package fi.nakoradio.hwo.integration.core;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
 import fi.nakoradio.hwo.physics.Constants;
 import fi.nakoradio.hwo.util.SizedStack;
+import fi.nakoradio.hwo.util.Utils;
 
 public class SocketMessenger  implements Messenger {
 
+	private static Logger logger = Logger.getLogger(SocketMessenger.class);
+	
 	private SizedStack<InputMessage> controlMessages;
 	private SizedStack<InputMessage> positionMessages;
 	private InputMessage latestPositionMessage;
 	private BotSocket socket;
 	private Vector<Long> outputMessageTimestamps;
+	private BufferedWriter fileOut;
 	
-	private static Logger logger = Logger.getLogger(SocketMessenger.class);
+	
 	
 	public SocketMessenger(){
 		this.outputMessageTimestamps = new Vector<Long>();
@@ -27,6 +34,28 @@ public class SocketMessenger  implements Messenger {
 		this.controlMessages = new SizedStack<InputMessage>(50);
 		this.positionMessages = new SizedStack<InputMessage>(50);
 		this.outputMessageTimestamps = new Vector<Long>();
+		
+		try {
+			long time = System.currentTimeMillis();
+			FileWriter fstream;
+			fstream = new FileWriter("log/io_" + time + ".log");
+			this.fileOut = new BufferedWriter(fstream);
+		} catch (IOException e) {
+			logger.error("Could not open file for writing");
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private void logToFile(String message, boolean out){
+		if(fileOut != null){
+			try {
+				fileOut.write(System.currentTimeMillis() + " " + out +  " - " + message + "\n");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	@Override
@@ -42,6 +71,7 @@ public class SocketMessenger  implements Messenger {
 			String messageData = "";
 			while (!Thread.interrupted() && (messageData = in.readLine()) != null) {
 				try {
+					logToFile(messageData,false);
 					InputMessage message = new InputMessage(messageData);
 					logger.info(messageData);
 					
@@ -55,14 +85,14 @@ public class SocketMessenger  implements Messenger {
 					}
 					
 				}catch(BadInputMessageException e){
-					System.err.println("Failed to parse input message: " + messageData);
+					logger.error("Failed to parse input message: " + messageData);
 				}
 			}
 		}catch(Exception e){
-			System.err.println("Failed to read data from bot socket");
+			logger.error("Failed to read data from bot socket");
 		}
 		
-		System.out.println("Socket listening thread stopped");
+		logger.info("Socket listening thread stopped");
 	}
 
 	@Override
@@ -82,13 +112,17 @@ public class SocketMessenger  implements Messenger {
 
 	@Override
 	public void sendJoinMessage(String name){
-		socket.getOut().println("{\"msgType\":\"join\",\"data\":\""+name+"\"}");
+		sendMessage("{\"msgType\":\"join\",\"data\":\""+name+"\"}");
 	}
 	
 	@Override
 	public void sendJoinMessage(String botname, String dueler) {
-		String message =  "{\"msgType\":\"requestDuel\",\"data\":[\""+botname+"\", \""+dueler+"\"]}";
-		socket.getOut().println(message);
+		// TODO: how to recover nicely
+		if(recordMessageAndCheckExceed()){
+			return;
+		}
+		
+		sendMessage("{\"msgType\":\"requestDuel\",\"data\":[\""+botname+"\", \""+dueler+"\"]}");
 	}
 
 	@Override
@@ -99,10 +133,13 @@ public class SocketMessenger  implements Messenger {
 			return;
 		}
 		
-		socket.getOut().println("{\"msgType\":\"changeDir\",\"data\":"+paddleDirection+"}");
-		
-		
-		
+		sendMessage("{\"msgType\":\"changeDir\",\"data\":"+Utils.toStringFormat(paddleDirection)+"}");
+	}
+	
+	private void sendMessage(String message){
+		logger.debug("Sending message to socket: " + message);
+		logToFile(message, true);
+		socket.getOut().println(message);
 	}
 
 	
@@ -114,9 +151,10 @@ public class SocketMessenger  implements Messenger {
 		if(this.outputMessageTimestamps.size() >= Constants.OUTPUT_MESSAGE_COUNT_LIMIT+1){ // you can send the max. so use +1 here
 			long oldestTimestamp = this.outputMessageTimestamps.get(0);
 			if(currentTimestamp - oldestTimestamp < (Constants.OUTPUT_MESSAGE_SPEED_LIMIT + Constants.OUTPUT_MESSAGE_SPEED_SAFE_FACTOR * Constants.OUTPUT_MESSAGE_COUNT_LIMIT) ){
-				System.err.println("Exceeded the output message limit");
+				logger.error("Exceeded the output message limit");
+				this.outputMessageTimestamps.remove(0);
 				//System.exit(1);
-				 return true;
+				return true;
 			}
 			this.outputMessageTimestamps.remove(0);
 			
@@ -151,7 +189,7 @@ public class SocketMessenger  implements Messenger {
 		for(int i = 0; i < 36; i++){
 			
 			m.recordMessageAndCheckExceed();
-			try{ Thread.sleep(109); } catch(Exception e){ }
+			try{ Thread.sleep(200); } catch(Exception e){ }
 			
 		}
 		

@@ -1,5 +1,8 @@
 package fi.nakoradio.hwo.ai;
 
+import java.util.Arrays;
+import java.util.Vector;
+
 import org.apache.log4j.Logger;
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
@@ -36,12 +39,17 @@ public class ServerClone {
 	private Blueprint currentBlueprint;
 	private Blueprint previousBluePrint;
 	
+	private Vector<Float> speedMedian;
+	
 	
 	public ServerClone(Blueprint blueprint) {
 		World world = new World(new Vec2(0,0),true);
 		this.simulation = new PhysicsWorld(world, blueprint);
 		//world.setContactListener(new ServerCloneListener(this));
 		this.ballPath = new ObjectPath();
+		this.speedMedian = new Vector<Float>();
+		
+		// Lastly run the update
 		this.update(blueprint);
 		
 	}
@@ -51,23 +59,54 @@ public class ServerClone {
 	}
 	
 	public void update(Blueprint blueprint){
-		
+		logger.debug("Updating serverclone with new blue print");
 		this.previousBluePrint = this.currentBlueprint;
 		this.currentBlueprint = blueprint;
 		
+		updateMyPaddleSpeed();
+		
+		// if our simulation is correct we should be on the right spot already
+		/*logger.debug("\n" +
+				"Updated mypaddle position from " + this.simulation.getMyPaddle().getPosition() + 
+				" to " + blueprint.getMyPaddle().getCenterPosition() + 
+				" max speed " + Utils.toStringFormat(this.getDeterminedPaddleMaxSpeed()));*/
+		if(this.previousBluePrint != null){
+			float tickCount = ((float)(this.currentBlueprint.getTimestamp()-this.previousBluePrint.getTimestamp()))/blueprint.getTickInterval();
+			//logger.debug("mypaddle: ticks from previous update: " + tickCount);
+			float estDist = this.getDeterminedPaddleMaxSpeed() * ((float)blueprint.getTickInterval())/1000f;
+			//logger.debug("mypaddle: estimated max distance in one tick: " + 
+			//Utils.toStringFormat(estDist)); 
+			//logger.debug("mypaddle: our own simulation was at: " + Utils.toStringFormat(this.simulation.getMyPaddle().getPosition()));
+			
+			//logger.debug("mypaddle: from server we set us to: " + Utils.toStringFormat(blueprint.getMyPaddle().getCenterPosition()));
+			//logger.debug("mypaddle: so we moved " + 
+			//		Math.abs(this.simulation.getMyPaddle().getPosition().y-blueprint.getMyPaddle().getCenterPosition().y) +
+			//		" versus " + Utils.toStringFormat(tickCount*estDist));
+		}
+		
 		this.simulation.setObjectPositions(this.currentBlueprint);
 		
+		
 		updateBallSpeed();
-		updateMyPaddleSpeed();
 		
 		
 	}
 	
+	// Sometimes there is large time between timestamps and we will get erronous speeds calculated. We use the median of speeds to avoid these abnormalities
 	private void updateMyPaddleSpeed() {
 		if(this.previousBluePrint != null && this.currentBlueprint != null){
 			Vec2 speed = calculateObjectSpeed(this.currentBlueprint.getMyPaddle(), this.previousBluePrint.getMyPaddle());
 			if(speed != null){
+				if(speed.length() != 0){
+					this.speedMedian.add(speed.length());
+				}
+				float currentMax = this.getDeterminedPaddleMaxSpeed();
+				if(speed.length() > currentMax){
+					if(speed.y < 0) currentMax *= -1;
+					speed.y = currentMax;
+				}
 				this.simulation.getMyPaddle().setLinearVelocity(speed);
+				logger.debug("Set mypaddle speed to: " + speed);
 			}
 		}
 	}
@@ -89,9 +128,10 @@ public class ServerClone {
 		Vec2 previousPos = new Vec2(bodyFromPreviousBluePrint.getPosition());
 		Vec2 distance = currentPos.sub(previousPos);
 		long elapsedTime = getCurrentBlueprint().getTimestamp() - getPreviousBluePrint().getTimestamp();
-		float speedValue = 1000 * ( distance.length() / elapsedTime  );
+		float speedValue = ( distance.length() / (((float)elapsedTime)/1000f)  );
 		distance.normalize();
 		Vec2 speed = distance.mul(speedValue);
+		logger.debug("\nCalculated speed for object speed["+Utils.toStringFormat(speed)+"] currentPos["+currentPos+"] previousPos["+previousPos+"] elapsedTime["+elapsedTime+"]");
 		return speed;
 	}
 	
@@ -101,10 +141,16 @@ public class ServerClone {
 		return new Vec2(this.simulation.getBall().getLinearVelocity());
 	}
 	
-	public Vec2 getMyPaddleSpeed(){
+	/*public Vec2 getMyPaddleSpeed(){
 		return new Vec2(this.simulation.getMyPaddle().getLinearVelocity());
-	}
+	}*/
 	
+	public void setMyPaddleSpeed(Vec2 speed) {
+		if(speed != null)
+			this.simulation.getMyPaddle().setLinearVelocity(speed);
+		
+	}
+
 	
 	// TODO: do we really need to calculate ball speeed differently? It bounces and this could cause interesting speed vectors also
 		// we do require certain distance travelled to measure ball speed but is it necessary? propably not.
@@ -165,6 +211,8 @@ public class ServerClone {
 	
 
 	public boolean bounced() {
+		if(this.previousBluePrint == null) return false;
+		
 		// Transform from previous blueprint to this new blueprint
 		Vec2 currentBallTransform = this.currentBlueprint.getBall().getPosition().sub(this.previousBluePrint.getBall().getPosition());
 		
@@ -205,6 +253,22 @@ public class ServerClone {
 		
 	}
 
+
+	public float getDeterminedPaddleMaxSpeed(){
+		// just to keep the size restricted for performance.
+		while(this.speedMedian.size() > 200){
+			this.speedMedian.removeElementAt(0);
+			this.speedMedian.removeElementAt(this.speedMedian.size()-1);
+		}
+		
+		if(this.speedMedian.size() != 0){
+			Float[] speeds = this.speedMedian.toArray(new Float[this.speedMedian.size()]);
+			Arrays.sort(speeds);
+			return speeds[speeds.length/2];
+		}
+		return 0.000001f; // avoid divide by zero
+		
+	}
 	
 	
 }
