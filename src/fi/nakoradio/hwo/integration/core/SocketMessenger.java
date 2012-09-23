@@ -51,6 +51,7 @@ public class SocketMessenger  implements Messenger {
 		if(fileOut != null){
 			try {
 				fileOut.write(System.currentTimeMillis() + " " + out +  " - " + message + "\n");
+				fileOut.flush();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
