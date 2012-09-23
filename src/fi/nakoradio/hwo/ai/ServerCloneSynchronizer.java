@@ -98,6 +98,7 @@ public class ServerCloneSynchronizer implements Runnable {
 		float dt = ((float)this.clone.getCurrentBlueprint().getTickInterval()) / dtDivider / 1000f;
 
 		for(int i = 0; i < dtDivider; i++){
+			System.out.println(i);
 			this.clone.getSimulation().getPhysics().step(dt, 10, 8);
 			handleMyPaddleWallCollision();
 		}

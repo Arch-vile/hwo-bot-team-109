@@ -184,25 +184,25 @@ public class PaddleMover implements Runnable {
 			float target = firstTarget;
 			
 			// TODO: currently does not work... seems to calculate correctly but paddle is positioned sometimes too far off?
-			/*
+			
 			float paddlePosition = serverClone.getSimulation().getMyPaddle().getPosition().y;
 			float paddleHeight = serverClone.getSimulation().getBlueprint().getMyPaddle().getHeight();
 			
 			
 			if(paddlePosition <= firstTarget){
 				if(secondTarget >= firstTarget){
-					target = firstTarget + paddleHeight/2 - paddleHeight/50 ; // some safe betting of extra 50%, with 10% paddle was sometimes just slighty off and missed the ball
+					target = firstTarget + paddleHeight/2 - paddleHeight/10 ; // some safe betting of extra 50%, with 10% paddle was sometimes just slighty off and missed the ball
 				}else if(secondTarget < firstTarget){
-					target = firstTarget - paddleHeight/2 + paddleHeight/50;
+					target = firstTarget - paddleHeight/2 + paddleHeight/10;
 				}
 			} else if(paddlePosition > firstTarget){
 				
 				if(secondTarget <= firstTarget){
-					target = firstTarget - paddleHeight/2 + paddleHeight/50;
+					target = firstTarget - paddleHeight/2 + paddleHeight/10;
 				} else if(secondTarget > firstTarget){
-					target = firstTarget + paddleHeight/2 - paddleHeight/50;
+					target = firstTarget + paddleHeight/2 - paddleHeight/10;
 				}
-			}*/
+			}
 			
 			if(HWOBot.visualize){
 				PhysicsWorld w = HWOBot.visualizer.getWorld();
